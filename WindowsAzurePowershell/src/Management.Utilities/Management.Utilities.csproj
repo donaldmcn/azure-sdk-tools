@@ -127,14 +127,16 @@
     <Reference Include="Microsoft.WindowsAzure.Configuration, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.WindowsAzure.ConfigurationManager.2.0.1.0\lib\net40\Microsoft.WindowsAzure.Configuration.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.WindowsAzure.ResourceManagement" />
     <Reference Include="Microsoft.WindowsAzure.ServiceManagement.Client">
       <HintPath>..\lib\Microsoft.WindowsAzure.ServiceManagement.Client.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WindowsAzure.Storage, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WindowsAzure.Storage.2.0.5.1\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.WindowsAzure.StorageClient" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+     <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -164,6 +166,47 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudGame\CloudGameClient.cs" />
+    <Compile Include="CloudGame\CloudGameUriElements.cs" />
+    <Compile Include="CloudGame\Contract\Requests\AzureResourceProviderContracts.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudGame.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudGameAssetRequest.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudGameCertificateRequest.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudGameImage.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudGameImageRequest.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudGameVariantRequest.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudGameVariantSchemaRequest.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudService.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudServiceResource.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CreateVariantSchemaRequest.cs" />
+    <Compile Include="CloudGame\Contract\Requests\EntityTypeConstants.cs" />
+    <Compile Include="CloudGame\Contract\Requests\GameMode.cs" />
+    <Compile Include="CloudGame\Contract\Requests\PutCloudGameRequest.cs" />
+    <Compile Include="CloudGame\Contract\Responses\ChartData.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CloudGameAssetCollectionResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CloudGameAssetResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CloudGameCertificateCollectionResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CloudGameCertificateResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CloudGameImageCollectionResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CloudGameImageResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CloudGameResourceSet.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CloudGameVariantCollectionResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CloudGameVariantResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\CreateGameModeResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\DashboardSummary.cs" />
+    <Compile Include="CloudGame\Contract\Responses\GeoRegionDeploymentInfo.cs" />
+    <Compile Include="CloudGame\Contract\Responses\GeoRegionPoolInfo.cs" />
+    <Compile Include="CloudGame\Contract\Responses\PackageDeploymentInfo.cs" />
+    <Compile Include="CloudGame\Contract\Responses\PostCloudGameAssetResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\PostCloudGameCertificateResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\PostCloudGameImageResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\PostCloudGameVariantResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\PublisherCloudGame.cs" />
+    <Compile Include="CloudGame\Contract\Responses\PublisherCloudGameInfoResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\ServiceDeploymentData.cs" />
+    <Compile Include="CloudGame\Contract\Responses\ServicePoolData.cs" />
+    <Compile Include="CloudGame\Contract\Responses\UsageData.cs" />
+    <Compile Include="CloudGame\ICloudGameClient.cs" />
     <Compile Include="CloudService\AzureTools\AzureTool.cs" />
     <Compile Include="CloudService\AzureTools\CsEncrypt.cs" />
     <Compile Include="CloudService\AzureTools\CsPack.cs" />

@@ -167,6 +167,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudGame\AzureCloudGameHttpClientCommandBase.cs" />
+    <Compile Include="CloudGame\GetAzureGameAssetCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGameCertificateCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGameModeCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGamePackageCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGameServiceCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGameServiceDeploymentReportCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGameServicePoolUnitReportCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGameServicePropertiesCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGameServiceSummaryReportCommand.cs" />
+    <Compile Include="CloudGame\NewAzureGameAssetCommand.cs" />
+    <Compile Include="CloudGame\NewAzureGameCertificateCommand.cs" />
+    <Compile Include="CloudGame\NewAzureGameModeCommand.cs" />
+    <Compile Include="CloudGame\NewAzureGamePackageCommand.cs" />
+    <Compile Include="CloudGame\NewAzureGameServiceCommand.cs" />
+    <Compile Include="CloudGame\PublishAzureGameServiceCommand.cs" />
+    <Compile Include="CloudGame\RemoveAzureGameAssetCommand.cs" />
+    <Compile Include="CloudGame\RemoveAzureGameCertificateCommand.cs" />
+    <Compile Include="CloudGame\RemoveAzureGameModeCommand.cs" />
+    <Compile Include="CloudGame\RemoveAzureGamePackageCommand.cs" />
     <Compile Include="CloudService\Development\DisableAzureRemoteDesktop.cs" />
     <Compile Include="CloudService\Development\EnableAzureMemcacheRole.cs" />
     <Compile Include="CloudService\Development\EnableAzureRemoteDesktop.cs" />
