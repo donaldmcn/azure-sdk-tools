@@ -112,7 +112,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         /// <summary>
         /// The put cloud service resource path.
         /// </summary>
-        public const string PutCloudServiceResourcePath = "/cloudservices/gameservices";
+        public const string CloudServiceResourcePath = "/cloudservices/gameservices";
 
         /// <summary>
         /// The default service name
@@ -137,7 +137,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         /// <summary>
         /// The cloud games resource path
         /// </summary>
-        public const string PutCloudGamesResourcePath = "/cloudservices/gameservices/resources/gameservices/xboxlivecompute/{0}";
+        public const string CloudGameResourcePath = "/cloudservices/gameservices/resources/gameservices/xboxlivecompute/{0}";
 
         /// <summary>
         /// The get cloud services resource path.

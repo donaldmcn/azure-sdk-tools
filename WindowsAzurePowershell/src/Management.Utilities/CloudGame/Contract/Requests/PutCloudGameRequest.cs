@@ -27,7 +27,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the cloud game.
         /// </summary>
         [DataMember(Name = "cloudGame")]
-        public CloudGames cloudGame
+        public CloudGame cloudGame
         {
             get;
             set;

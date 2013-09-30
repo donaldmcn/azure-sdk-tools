@@ -14,12 +14,8 @@
 
 namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Runtime.Serialization;
-    using System.Text;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// A collection of cloud game responses
@@ -34,7 +30,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// The cloud game responses.
         /// </value>
         [DataMember(Name = "cloudGameImages", Order = 0)]
-        public List<CloudGameImage> cloudGameImages
+        public List<CloudGamePackage> CloudGamePackages
         {
             get;
             set;

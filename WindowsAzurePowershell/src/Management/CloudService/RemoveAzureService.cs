@@ -27,8 +27,8 @@ namespace Microsoft.WindowsAzure.Management.CloudService
     {
         public ICloudServiceClient CloudServiceClient { get; set; }
 
-        [Parameter(Position = 0, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "name of the hosted service")]
-        public string ServiceName { get; set; }
+        [Parameter(Position = 0, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "name of the Cloud Game Service to remove")]
+        public string CloudGameName { get; set; }
 
         [Parameter(Position = 1, HelpMessage = "Do not confirm deletion of deployment")]
         public SwitchParameter Force { get; set; }
@@ -51,7 +51,7 @@ namespace Microsoft.WindowsAzure.Management.CloudService
                         WriteVerbose,
                         WriteWarning);
 
-                    CloudServiceClient.RemoveCloudService(ServiceName);
+                    CloudServiceClient.RemoveCloudService(CloudGameName);
 
                     if (PassThru)
                     {

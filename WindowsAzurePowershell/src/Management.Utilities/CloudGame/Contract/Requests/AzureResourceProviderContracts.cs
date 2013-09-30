@@ -636,13 +636,13 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
     }
 
     [CollectionDataContract(Name = "CloudGames", ItemName = "CloudGames", Namespace = "http://schemas.microsoft.com/windowsazure")]
-    public class CloudGamesList : List<CloudGames>
+    public class CloudGamesList : List<CloudGame>
     {
     }
 
 
     [DataContract(Namespace = "http://schemas.microsoft.com/windowsazure")]
-    internal class CloudService : IExtensibleDataObject
+    public class CloudService : IExtensibleDataObject
     {
         //public CloudService();
 

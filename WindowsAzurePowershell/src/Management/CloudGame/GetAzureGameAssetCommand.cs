@@ -25,9 +25,9 @@ namespace Microsoft.WindowsAzure.Management.CloudGame
     [Cmdlet(VerbsCommon.Get, "AzureGameAsset"), OutputType(typeof(CloudGameAssetCollectionResponse))]
     public class GetAzureGameAssetCommand : AzureCloudGameHttpClientCommandBase
     {
-        [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game id.")]
+        [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game Name.")]
         [ValidateNotNullOrEmpty]
-        public string CloudGameId { get; set; }
+        public string CloudGameName { get; set; }
 
         public ICloudGameClient CloudGameClient { get; set; }
 
@@ -36,7 +36,7 @@ namespace Microsoft.WindowsAzure.Management.CloudGame
             CloudGameClient = CloudGameClient ?? new CloudGameClient(CurrentSubscription, WriteDebug);
             CloudGameAssetCollectionResponse result = null;
 
-            CatchAggregatedExceptionFlattenAndRethrow(() => { result = CloudGameClient.GetGameAssets(CloudGameId).Result; });
+            CatchAggregatedExceptionFlattenAndRethrow(() => { result = CloudGameClient.GetGameAssets(CloudGameName).Result; });
             WriteObject(result);
         }
     }

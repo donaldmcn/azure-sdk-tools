@@ -38,6 +38,8 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
 {
     using System.Linq;
 
+    using Microsoft.WindowsAzure.Management.Utilities.CloudGameClientHelper;
+
     /// <summary>
     ///     Implements ICloudGameClient to use HttpClient for communication
     /// </summary>
@@ -49,10 +51,12 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         private readonly string _subscriptionId;
 
         /// <summary>
-        ///     Creates new MediaServicesClient.
+        ///     Creates new CloudGameClient.
         /// </summary>
         /// <param name="subscription">The Windows Azure subscription data object</param>
         /// <param name="logger">The logger action</param>
+        /// <param name="httpClient">The HTTP Client to use to communicate with RDFE</param>
+        /// <param name="httpXmlClient">The HTTP Client for processing XML data</param>
         public CloudGameClient(SubscriptionData subscription, Action<string> logger, HttpClient httpClient, HttpClient httpXmlClient)
         {
             _subscriptionId = subscription.SubscriptionId;
@@ -63,12 +67,15 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         }
 
         /// <summary>
-        ///     Creates new MediaServicesClient.
+        ///     Creates new CloudGameClient.
         /// </summary>
         /// <param name="subscription">The Windows Azure subscription data object</param>
         /// <param name="logger">The logger action</param>
         public CloudGameClient(SubscriptionData subscription, Action<string> logger)
-            : this(subscription, logger, CreateCloudGameHttpClient(subscription), CreateCloudGameXmlClient(subscription))
+            : this(subscription, 
+                   logger, 
+                   ClientHelper.CreateCloudGameHttpClient(subscription, CloudGameUriElements.ApplicationJsonMediaType), 
+                   ClientHelper.CreateCloudGameHttpClient(subscription, CloudGameUriElements.ApplicationXmlMediaType))
         {
         }
 
@@ -90,86 +97,102 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
 
 
         /// <summary>
-        ///     Gets the game images.
+        ///     Gets the game packages.
         /// </summary>
-        /// <param name="cloudGameId">The cloud game id.</param>
+        /// <param name="cloudGameName">The cloud game name.</param>
         /// <returns></returns>
-        public Task<CloudGameImageCollectionResponse> GetGameImages(string cloudGameId)
+        public Task<CloudGameImageCollectionResponse> GetGamePackages(string cloudGameName)
         {
-            string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameImagesResourcePath, cloudGameId);
-            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ProcessJsonResponse<CloudGameImageCollectionResponse>(tr));
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameImagesResourcePath, cloudGameName);
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<CloudGameImageCollectionResponse>(tr));
         }
 
         /// <summary>
-        ///     Creates the cloud game image.
+        ///     Upload package components to a cloud game.
         /// </summary>
-        /// <param name="cloudGameId">The cloud game name.</param>
-        /// <param name="image">The game image.</param>
-        /// <param name="cspkg">The game CSPKG.</param>
-        /// <param name="cscfg">The game CSCFG.</param>
-        /// <param name="asset">The game asset.</param>
-        /// <returns></returns>
-        public Task<CloudGameImage> CreateGameImage(string cloudGameId,
-                            CloudGameImage image,
-                            Stream cspkg,
-                            Stream cscfg,
-                            Stream asset)
+        /// <param name="cloudGameName">The cloud game name.</param>
+        /// <param name="packageName">The name of the package</param>
+        /// <param name="maxPlayers">The max number of players allowed</param>
+        /// <param name="assetId">The id of a previously uploaded asset file</param>
+        /// <param name="cspkgFileName">The name of the local cspkg file name</param>
+        /// <param name="cspkgStream">The cspkg file stream</param>
+        /// <param name="cscfgFileName">The name of the local cscfg file name</param>
+        /// <param name="cscfgStream">The game cscfg file stream</param>
+        /// <returns>
+        /// True if successful
+        /// </returns>
+        public Task<bool> CreateGamePackage(
+            string cloudGameName,
+            string packageName,
+            int maxPlayers,
+            string assetId,
+            string cspkgFileName,
+            Stream cspkgStream,
+            string cscfgFileName,
+            Stream cscfgStream)
         {
-            string assetId = null;
-            if (asset != null)
+            Guid assetIdGuid;
+            var haveAsset = Guid.TryParse(assetId, out assetIdGuid);
+            var requestMetadata = new CloudGameImageRequest()
             {
-                CloudGameAssetRequest assetRequest = new CloudGameAssetRequest()
-                {
-                    Filename = image.assetFile,// asset.FileName,
-                    Name = image.assetFile//asset.FileName
-                };
-                PostCloudGameAssetResponse assetResponse = this.CreateGameAsset(cloudGameId, assetRequest, asset).Result;
-                assetId = assetResponse.GameAssetId;
-            }
-
-            string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameImagesResourcePath, cloudGameId);
-            var cloudGameRequestMetadata = new CloudGameImageRequest()
-            {
-                CspkgFilename = image.packageFile,//cspkg.FileName,
-                CscfgFilename = image.configFile,//cscfg.FileName,
-                MinRequiredPlayers = 2,
-                MaxAllowedPlayers = Convert.ToInt32(image.maxPlayers),
-                Name = image.name,
-                AssetId = assetId
+                CspkgFilename = cspkgFileName,
+                CscfgFilename = cscfgFileName,
+                MaxAllowedPlayers = maxPlayers,
+                MinRequiredPlayers = 1,
+                Name = packageName,
+                AssetId = haveAsset ? assetId : null        // GSRM currently requires NULL or a valid Guid
             };
 
-            PostCloudGameImageResponse responseMetadata = null;
+            PostCloudGameImageResponse responseMetadata;
             using (var multipartFormContent = new MultipartFormDataContent())
             {
-                multipartFormContent.Add(new StringContent(ToJson(cloudGameRequestMetadata)), "metadata");
-                multipartFormContent.Add(new StreamContent(cscfg), "packageconfig");
+                multipartFormContent.Add(new StringContent(ClientHelper.ToJson(requestMetadata)), "metadata");
+                multipartFormContent.Add(new StreamContent(cscfgStream), "packageconfig");
 
-                responseMetadata = _httpClient.PostAsync(url, multipartFormContent).ContinueWith(tr => ProcessJsonResponse<PostCloudGameImageResponse>(tr)).Result;
-                image.id = responseMetadata.GsiId;
-            }
+                var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameImagesResourcePath, cloudGameName);
+                responseMetadata = _httpClient.PostAsync(url, multipartFormContent).ContinueWith(tr => ClientHelper.ProcessJsonResponse<PostCloudGameImageResponse>(tr)).Result;
+           }
 
             try
             {
+                // Use the pre-auth URL received in the response to upload the cspkg file. Wait for it to complete
                 var cloudblob = new CloudBlob(responseMetadata.CspkgPreAuthUrl);
                 Task.Factory.FromAsync(
-                    (callback, state) => cloudblob.BeginUploadFromStream(cspkg, callback, state),
-                    (ar) => cloudblob.EndUploadFromStream(ar),
-                    TaskCreationOptions.None);
+                    (callback, state) => cloudblob.BeginUploadFromStream(cspkgStream, callback, state),
+                    cloudblob.EndUploadFromStream,
+                    TaskCreationOptions.None).Wait();
             }
             catch (StorageException)
             {
-                string errorMessage = string.Format("Failed to upload cspkg for cloud game. gameId {0} cspkgName {1}", cloudGameId, image.packageFile);
-                throw CreateExceptionFromJson(HttpStatusCode.Ambiguous, errorMessage);
+                var errorMessage = string.Format("Failed to upload cspkg for cloud game. gameId {0} cspkgName {1}", cloudGameName, cspkgFileName);
+                throw ClientHelper.CreateExceptionFromJson(HttpStatusCode.Ambiguous, errorMessage);
             }
 
-            url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameImageResourcePath, cloudGameId, responseMetadata.GsiId);
+            var result = false;
             using (var multipartFormContent = new MultipartFormDataContent())
             {
-                multipartFormContent.Add(new StringContent(ToJson(cloudGameRequestMetadata)), "metadata");
-                bool result = _httpClient.PutAsync(url, multipartFormContent).ContinueWith(tr => ProcessJsonResponse<bool>(tr)).Result;
+                multipartFormContent.Add(new StringContent(ClientHelper.ToJson(requestMetadata)), "metadata");
+                var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameImageResourcePath, cloudGameName, responseMetadata.GsiId);
+                result = _httpClient.PutAsync(url, multipartFormContent).ContinueWith(
+                    tr =>
+                    {
+                        var message = tr.Result;
+                        if (message.IsSuccessStatusCode)
+                        {
+                            return true;
+                        }
+
+                        // Error result, so throw an exception
+                        throw new ServiceManagementClientException(message.StatusCode,
+                            new ServiceManagementError
+                            {
+                                Code = message.StatusCode.ToString()
+                            },
+                            string.Empty);
+                    }).Result;
             }
 
-            return Task<CloudGameImage>.Factory.StartNew(() => image);
+            return Task<bool>.Factory.StartNew(() => result);
         }
 
         /// <summary>
@@ -181,7 +204,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<bool> RemoveGameImages(string cloudGameId, System.Guid gsiId)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameImageResourcePath, cloudGameId, gsiId);
-            return _httpClient.DeleteAsync(url).ContinueWith(tr => ProcessJsonResponse<bool>(tr));
+            return _httpClient.DeleteAsync(url).ContinueWith(tr => ClientHelper.ProcessJsonResponse<bool>(tr));
         }
 
         /// <summary>
@@ -192,24 +215,30 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<GameModeCollectionResponse> GetGameModes(string cloudGameId)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameModesResourcePath, cloudGameId);
-            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ProcessJsonResponse<GameModeCollectionResponse>(tr));
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<GameModeCollectionResponse>(tr));
         }
 
         /// <summary>
         ///     Creates the cloud game mode.
         /// </summary>
         /// <param name="cloudGameId">The cloud game id.</param>
-        /// <param name="gameMode">The game mode.</param>
+        /// <param name="gameModeName">The game mode name</param>
+        /// <param name="gameModeFileName">The game mode oringal filename</param>
         /// <param name="gameModeStream">The game mode stream.</param>
         /// <returns></returns>
-        public Task<CreateGameModeResponse> CreateGameMode(string cloudGameId, GameMode gameMode, Stream gameModeStream)
+        public Task<CreateGameModeResponse> CreateGameMode(string cloudGameId, string gameModeName, string gameModeFileName, Stream gameModeStream)
         {
-            string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameModesResourcePath, cloudGameId);
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameModesResourcePath, cloudGameId);
             var multipartContent = new MultipartFormDataContent();
             {
-                multipartContent.Add(new StringContent(ToJson(gameMode)), "metadata");
+                var newGameMode = new GameMode()
+                {
+                    name = gameModeName,
+                    fileName = gameModeFileName
+                };
+                multipartContent.Add(new StringContent(ClientHelper.ToJson(newGameMode)), "metadata");
                 multipartContent.Add(new StreamContent(gameModeStream), "variant");
-                return _httpClient.PostAsync(url, multipartContent).ContinueWith(tr => ProcessJsonResponse<CreateGameModeResponse>(tr));
+                return _httpClient.PostAsync(url, multipartContent).ContinueWith(tr => ClientHelper.ProcessJsonResponse<CreateGameModeResponse>(tr));
             }
         }
 
@@ -222,7 +251,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<bool> RemoveGameMode(string cloudGameId, System.Guid variantid)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameModeResourcePath, cloudGameId, variantid);
-            return _httpClient.DeleteAsync(url).ContinueWith(tr => ProcessJsonResponse<bool>(tr));
+            return _httpClient.DeleteAsync(url).ContinueWith(tr => ClientHelper.ProcessJsonResponse<bool>(tr));
         }
 
         /// <summary>
@@ -233,7 +262,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<CloudGameCertificateCollectionResponse> GetGameCertificates(string cloudGameId)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.CertificatesResourcePath, cloudGameId);
-            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ProcessJsonResponse<CloudGameCertificateCollectionResponse>(tr));
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<CloudGameCertificateCollectionResponse>(tr));
         }
 
         /// <summary>
@@ -248,9 +277,9 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.CertificatesResourcePath, cloudGameId);
             var multipartContent = new MultipartFormDataContent();
             {
-                multipartContent.Add(new StringContent(ToJson(certificate)), "metadata");
+                multipartContent.Add(new StringContent(ClientHelper.ToJson(certificate)), "metadata");
                 multipartContent.Add(new StreamContent(certificateStream), "certificate");
-                return _httpClient.PostAsync(url, multipartContent).ContinueWith(tr => ProcessJsonResponse<PostCloudGameCertificateResponse>(tr));
+                return _httpClient.PostAsync(url, multipartContent).ContinueWith(tr => ClientHelper.ProcessJsonResponse<PostCloudGameCertificateResponse>(tr));
             }
         }
 
@@ -263,64 +292,91 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<bool> RemoveGameCertificate(string cloudGameId, System.Guid certificateId)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.CertificateResourcePath, cloudGameId, certificateId);
-            return _httpClient.DeleteAsync(url).ContinueWith(tr => ProcessJsonResponse<bool>(tr));
+            return _httpClient.DeleteAsync(url).ContinueWith(tr => ClientHelper.ProcessJsonResponse<bool>(tr));
         }
 
         /// <summary>
         ///     Gets the game assets.
         /// </summary>
-        /// <param name="cloudGameId">The cloud game id.</param>
+        /// <param name="cloudGameName">The cloud game id.</param>
         /// <returns></returns>
-        public Task<CloudGameAssetCollectionResponse> GetGameAssets(string cloudGameId)
+        public Task<CloudGameAssetCollectionResponse> GetGameAssets(string cloudGameName)
         {
-            string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameAssetsResourcePath, cloudGameId);
-            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ProcessJsonResponse<CloudGameAssetCollectionResponse>(tr));
+            string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameAssetsResourcePath, cloudGameName);
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<CloudGameAssetCollectionResponse>(tr));
         }
 
         /// <summary>
         ///     Creates the game asset.
         /// </summary>
-        /// <param name="subscriptionId">The subscription id.</param>
-        /// <param name="cloudGameId">The cloud game id.</param>
-        /// <param name="assetFile">The asset file.</param>
+        /// <param name="cloudGameName">The cloud game name.</param>
+        /// <param name="gameAssetName">The asset name.</param>
+        /// <param name="gameAssetFileName">The asset filename.</param>
+        /// <param name="gameAssetstream">The asset filestream.</param>
         /// <returns></returns>
-        public Task<PostCloudGameAssetResponse> CreateGameAsset(string cloudGameId, CloudGameAssetRequest assetRequest, Stream assetFile)
+        public Task<PostCloudGameAssetResponse> CreateGameAsset(
+            string cloudGameName, 
+            string gameAssetName, 
+            string gameAssetFileName, 
+            Stream gameAssetStream)
         {
-            string assetId = string.Empty;
-            string assetUrl = string.Empty;
-            PostCloudGameAssetResponse result = null;
-
-            string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameAssetsResourcePath, cloudGameId);
-            var multpartFormContent = new MultipartFormDataContent();
+            // Call in to get an AssetID and preauthURL to use for upload of the asset
+            var newGameAssetRequest = new CloudGameAssetRequest()
             {
-                multpartFormContent.Add(new StringContent(ToJson(assetRequest)), "metadata");
-                result = _httpClient.PostAsync(url, multpartFormContent).ContinueWith(tr => ProcessJsonResponse<PostCloudGameAssetResponse>(tr)).Result;
-                assetId = result.GameAssetId;
-                assetUrl = result.GameAssetPreAuthUrl;
-            }
+                Filename = gameAssetFileName,
+                Name = gameAssetName
+            };
+
+            var multipartFormContent = new MultipartFormDataContent
+            {
+                {
+                    new StringContent(ClientHelper.ToJson(newGameAssetRequest)),"metadata"
+                }
+            };
+
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameAssetsResourcePath, cloudGameName);
+            var postAssetResult = _httpClient.PostAsync(url, multipartFormContent).ContinueWith(tr => ClientHelper.ProcessJsonResponse<PostCloudGameAssetResponse>(tr)).Result;
 
             try
             {
-                var cloudblob = new CloudBlob(assetUrl);
+                var cloudblob = new CloudBlob(postAssetResult.GameAssetPreAuthUrl);
                 Task.Factory.FromAsync(
-                    (callback, state) => cloudblob.BeginUploadFromStream(assetFile, callback, state),
-                    (ar) => cloudblob.EndUploadFromStream(ar),
-                    TaskCreationOptions.None);
+                    (callback, state) => cloudblob.BeginUploadFromStream(gameAssetStream, callback, state),
+                    cloudblob.EndUploadFromStream,
+                    TaskCreationOptions.None).Wait();
             }
             catch (StorageException)
             {
-                string errorMessage = string.Format("Failed to asset file for cloud game to azure storage. gameId {0}, assetId {1}", cloudGameId, assetId);
-                throw CreateExceptionFromJson(HttpStatusCode.Ambiguous, errorMessage);
+                var errorMessage = string.Format("Failed to asset file for cloud game to azure storage. gameId {0}, assetId {1}", cloudGameName, postAssetResult.GameAssetId);
+                throw ClientHelper.CreateExceptionFromJson(HttpStatusCode.Ambiguous, errorMessage);
             }
 
-            var multpartFormContentMetadata = new MultipartFormDataContent();
+            var multpartFormContentMetadata = new MultipartFormDataContent
             {
-                url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameAssetResourcePath, cloudGameId, assetId);
-                multpartFormContentMetadata.Add(new StringContent(ToJson(assetRequest)), "metadata");
-                bool uploadResult = _httpClient.PutAsync(url, multpartFormContentMetadata).ContinueWith(tr => ProcessJsonResponse<bool>(tr)).Result;
-            }
+                {
+                    new StringContent(ClientHelper.ToJson(newGameAssetRequest)),"metadata"
+                }
+            };
 
-            return Task<PostCloudGameAssetResponse>.Factory.StartNew(() => result);
+            url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameAssetResourcePath, cloudGameName, postAssetResult.GameAssetId);
+            _httpClient.PutAsync(url, multpartFormContentMetadata).ContinueWith(
+                tr =>
+                    {
+                        var message = tr.Result;
+                        if (message.IsSuccessStatusCode)
+                        {
+                            return true;
+                        }
+
+                        // Error result, so throw an exception
+                        throw new ServiceManagementClientException(
+                            message.StatusCode,
+                            new ServiceManagementError { Code = message.StatusCode.ToString() },
+                            string.Empty);
+                    });
+
+            // Return the Asset info
+            return Task<PostCloudGameAssetResponse>.Factory.StartNew(() => postAssetResult);
         }
 
         /// <summary>
@@ -332,7 +388,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<bool> RemoveGameAsset(string cloudGameId, System.Guid assetId)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GameAssetResourcePath, cloudGameId, assetId);
-            return _httpClient.DeleteAsync(url).ContinueWith(tr => ProcessJsonResponse<bool>(tr));
+            return _httpClient.DeleteAsync(url).ContinueWith(tr => ClientHelper.ProcessJsonResponse<bool>(tr));
         }
 
         /// <summary>
@@ -343,7 +399,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<DashboardSummary> GetGameServiceSummaryReport(string cloudGameId)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.DashboardSummaryPath, cloudGameId);
-            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ProcessJsonResponse<DashboardSummary>(tr));
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<DashboardSummary>(tr));
         }
 
         /// <summary>
@@ -354,7 +410,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<ServiceDeploymentData> GetGameServiceDeploymentsReport(string cloudGameId)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.DeploymentsReportPath, cloudGameId);
-            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ProcessJsonResponse<ServiceDeploymentData>(tr));
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<ServiceDeploymentData>(tr));
         }
 
         /// <summary>
@@ -365,41 +421,31 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<ServicePoolData> GetGameServicepoolsReport(string cloudGameId)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.ServicepoolsReportPath, cloudGameId);
-            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ProcessJsonResponse<ServicePoolData>(tr));
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<ServicePoolData>(tr));
         }
 
         /// <summary>
-        ///     Creates the cloud game resource.
+        ///     Creates a new cloud game resource.
         /// </summary>
-        /// <param name="game">The game resource.</param>
-        /// <param name="schemaFileName">The schema file name.</param>
-        /// <param name="schemaStream">The schema stream.</param>
+        /// <param name="titleId">The title ID within the subscription to use (in Decimal form)</param>
+        /// <param name="sandboxes">A comma seperated list of sandbox names</param>
+        /// <param name="resourceSetIds">A comma seperated list of resource set IDs</param>
+        /// <param name="name">The name of the Cloud Game</param>
+        /// <param name="schemaName">The name of the game mode schema to sue</param>
+        /// <param name="schemaFileName">The local schema file name (only used for reference)</param>
+        /// <param name="schemaStream">The schema data as a file stream.</param>
         /// <returns>The cloud task for completion</returns>
-        public Task<bool> CreateGameService(CloudGames game, string schemaFileName, Stream schemaStream)
-        {
-            // Check registration.
-            string url = _httpClient.BaseAddress + String.Format("/services?service=gameservices.xboxlivecompute&action=register");
-            bool result = _httpClient.PutAsync(url, null).ContinueWith(tr => ProcessJsonResponse<bool>(tr, true, HttpStatusCode.Conflict)).Result;
-
-            //var preferredRegion = await GetPreferredRegionAsync(game.subscriptionId, game.name);
-            // TODO Get the preferred region and set it into cloud service object
-
-            // Create cloud service.
-            url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.PutCloudServiceResourcePath);
-            
-            Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract.CloudService cloudService = new Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract.CloudService()// CloudServices()
-            {
-                Name = CloudGameUriElements.DefaultServiceName,
-                Description = CloudGameUriElements.DefaultServiceName,
-                GeoRegion = "West US",
-                Label = CloudGameUriElements.DefaultServiceName
-            };
-
-            result = _httpClient.PutAsXmlAsync(url, cloudService).ContinueWith(tr => ProcessJsonResponse<bool>(tr, true, HttpStatusCode.BadRequest)).Result;
-
-            // Create gsiset.
-            game.gsiSetId = Guid.NewGuid().ToString();
-            //game.publisherId = Guid.NewGuid().ToString();
+        public Task<bool> CreateGameService(
+            string titleId,
+            string sandboxes,
+            string resourceSetIds,
+            string name,
+            string schemaName,
+            string schemaFileName, 
+            Stream schemaStream)
+        {      
+            // Idempotent call to to a first time registration of the cloud service wrapping container.
+            ClientHelper.RegisterCloudService(_httpClient, _httpXmlClient);
 
             string schemaContent;
             using (var streamReader = new StreamReader(schemaStream))
@@ -409,35 +455,93 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
 
             var varSchemaRequestData = new CreateVariantSchemaRequest()
             {
-                Metadata = new CloudGameVariantSchemaRequest() { Name = game.schemaName, Filename = schemaFileName, TitleId = game.titleId },
+                Metadata = new CloudGameVariantSchemaRequest()
+                {
+                    Name = schemaName, 
+                    Filename = schemaFileName, 
+                    TitleId = titleId
+                },
                 Content = schemaContent
+            };
+
+            var newCloudGame = new Contract.CloudGame()
+            {
+                displayName = name,
+                name = name,
+                resourceSets = resourceSetIds,
+                sandboxes = sandboxes,
+                schemaName = schemaName,
+                titleId = titleId,
+                status = "Creating",                    // BUGBUG... GSRM needs to fix depending on this property being set
+                schemaId = Guid.NewGuid().ToString()    // BUGBUG... GSRM needs to fix depending on this property being set
             };
 
             var putGameRequest = new PutCloudGameRequest()
             {
-                cloudGame = game,
+                cloudGame = newCloudGame,
                 variantSchema = varSchemaRequestData
             };
 
             var doc = new XmlDocument();
             var resource = new Resource()
             {
-                Name = game.name,
-                ETag = Guid.NewGuid().ToString(),
+                Name = name,
+                ETag = Guid.NewGuid().ToString(),       // BUGBUG What should this ETag value be?
                 Plan = string.Empty,
                 ResourceProviderNamespace = CloudGameUriElements.NamespaceName,
                 Type = CloudGameUriElements.XboxLiveComputeResourceType,
                 SchemaVersion = CloudGameUriElements.SchemaVersion,
                 IntrinsicSettings = new XmlNode[]
                 {
-                    doc.CreateCDataSection(ToJson(putGameRequest))
+                    doc.CreateCDataSection(ClientHelper.ToJson(putGameRequest))
                 }
             }; 
 
-            url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.PutCloudGamesResourcePath, game.name);
-            result = _httpClient.PutAsXmlAsync(url, resource).ContinueWith(tr => ProcessJsonResponse<bool>(tr)).Result;
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.CloudGameResourcePath, name);
+            var result = _httpClient.PutAsXmlAsync(url, resource).ContinueWith(
+                tr =>
+                {
+                    var message = tr.Result;
+                    if (message.IsSuccessStatusCode)
+                    {
+                        return true;
+                    }
+
+                    // Error result, so throw an exception
+                    throw new ServiceManagementClientException(message.StatusCode,
+                        new ServiceManagementError
+                        {
+                            Code = message.StatusCode.ToString()
+                        },
+                        string.Empty);
+                }).Result;
 
             return Task<bool>.Factory.StartNew(() => result);
+        }
+
+        /// <summary>
+        /// Removes a Game Service
+        /// </summary>
+        /// <param name="name">The service to remove</param>
+        /// <returns></returns>
+        public Task<bool> RemoveGameService(string name)
+        {
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.CloudGameResourcePath, name);
+            return _httpClient.DeleteAsync(url).ContinueWith(
+                tr =>
+                    {
+                        var message = tr.Result;
+                        if (message.IsSuccessStatusCode)
+                        {
+                            return true;
+                        }
+
+                        // Error result, so throw an exception
+                        throw new ServiceManagementClientException(
+                            message.StatusCode,
+                            new ServiceManagementError { Code = message.StatusCode.ToString() },
+                            string.Empty);
+                    });
         }
 
         /// <summary>
@@ -447,7 +551,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<CloudGamesList> GetGameService()
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.GetCloudServicesResourcePath);
-            return _httpXmlClient.GetAsync(url, Logger).ContinueWith(tr => ProcessCloudServiceResponse(tr));
+            return _httpXmlClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessCloudServiceResponse(tr));
 
         }
 
@@ -460,7 +564,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.ResourcePropertiesPath);
 
             ResourceProviderProperties propertyList;
-            propertyList = _httpXmlClient.GetAsync(url, Logger).ContinueWith(tr => ProcessXmlResponse<ResourceProviderProperties>(tr)).Result;
+            propertyList = _httpXmlClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessXmlResponse<ResourceProviderProperties>(tr)).Result;
 
             if (propertyList == null)
             {
@@ -474,7 +578,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
                 return null;
             }
 
-            PublisherCloudGameInfoResponse result = DeserializeJsonToObject<PublisherCloudGameInfoResponse>(property.Value);
+            PublisherCloudGameInfoResponse result = ClientHelper.DeserializeJsonToObject<PublisherCloudGameInfoResponse>(property.Value);
             return Task<PublisherCloudGameInfoResponse>.Factory.StartNew(() => result);
         }
 
@@ -486,205 +590,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         public Task<bool> PublishCloudGameAsync(string cloudGameName)
         {
             string url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.PublishCloudGamePath, cloudGameName);
-            return _httpClient.PutAsync(url, null).ContinueWith(tr => ProcessJsonResponse<bool>(tr));
-        }
-
-        /// <summary>
-        ///     Processes the response and handle error cases.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="responseMessage">The response message.</param>
-        /// <returns></returns>
-        /// <exception cref="Microsoft.WindowsAzure.ServiceManagement.ServiceManagementClientException"></exception>
-        /// <exception cref="ServiceManagementError"></exception>
-        private static T ProcessJsonResponse<T>(Task<HttpResponseMessage> responseMessage, bool ignore = false, HttpStatusCode ignoreStatusCode = HttpStatusCode.Conflict)
-        {
-            HttpResponseMessage message = responseMessage.Result;
-            if (typeof(T) == typeof(bool) && (message.IsSuccessStatusCode || (ignore == true && message.StatusCode == ignoreStatusCode)))
-            {
-                return (T) (object) true;
-            }
-
-            string content = message.Content.ReadAsStringAsync().Result;
-
-            if (message.IsSuccessStatusCode)
-            {
-                return (T) JsonConvert.DeserializeObject(content, typeof (T));
-            }
-
-            throw CreateExceptionFromJson(message.StatusCode, content);
-        }
-
-        private static CloudGamesList ProcessCloudServiceResponse(Task<HttpResponseMessage> responseMessage)
-        {
-            var message = responseMessage.Result;
-            var content = message.Content.ReadAsStringAsync().Result;
-            var encoding = GetEncodingFromResponseMessage(message);
-            var response = new CloudGamesList();
-
-            if (message.IsSuccessStatusCode)
-            {
-                var ser = new DataContractSerializer(typeof(Contract.CloudService));
-                using (var stream = new MemoryStream(encoding.GetBytes(content)))
-                {
-                    stream.Position = 0;
-                    var reader = XmlDictionaryReader.CreateTextReader(stream, new XmlDictionaryReaderQuotas());
-                    var serviceResponse = (Contract.CloudService)ser.ReadObject(reader, true);
-
-                    foreach (var resource in serviceResponse.Resources.Where(resource => resource.OperationStatus.Error != null))
-                    {
-                        if (resource.IntrinsicSettings == null || resource.IntrinsicSettings.Length == 0)
-                        {
-                            response.Add(new CloudGames() { name = resource.Name });
-                            continue;
-                        }
-
-                        var cbData = resource.IntrinsicSettings[0] as XmlCDataSection;
-                        if (cbData == null)
-                        {
-                            continue;
-                        }
-
-                        var jsonSer = new DataContractJsonSerializer(typeof(CloudGames));
-                        using (var jsonStream = new MemoryStream(encoding.GetBytes(cbData.Data)))
-                        {
-                            var game = (CloudGames)jsonSer.ReadObject(jsonStream);
-                            response.Add(game);                          
-                        }
-                    }
-                }
-
-                return response;
-            }
-
-            throw CreateExceptionFromXml(content, message);
-        }
-
-        private static T ProcessXmlResponse<T>(Task<HttpResponseMessage> responseMessage)
-        {
-            HttpResponseMessage message = responseMessage.Result;
-            string content = message.Content.ReadAsStringAsync().Result;
-            Encoding encoding = GetEncodingFromResponseMessage(message);
-
-            if (message.IsSuccessStatusCode)
-            {
-                var ser = new DataContractSerializer(typeof(T));
-                using (var stream = new MemoryStream(encoding.GetBytes(content)))
-                {
-                    stream.Position = 0;
-                    XmlDictionaryReader reader = XmlDictionaryReader.CreateTextReader(stream, new XmlDictionaryReaderQuotas());
-                    return (T)ser.ReadObject(reader, true);
-                }
-            }
-
-            throw CreateExceptionFromXml(content, message);
-        }
-
-        private static Encoding GetEncodingFromResponseMessage(HttpResponseMessage message)
-        {
-            string encodingString = message.Content.Headers.ContentType.CharSet;
-            Encoding encoding = Encoding.GetEncoding(encodingString);
-            return encoding;
-        }
-
-        private static ServiceManagementClientException CreateExceptionFromXml(string content, HttpResponseMessage message)
-        {
-            Encoding encoding = GetEncodingFromResponseMessage(message);
-
-            using (var stream = new MemoryStream(encoding.GetBytes(content)))
-            {
-                stream.Position = 0;
-                var serializer = new XmlSerializer(typeof(ServiceError));
-                var serviceError = (ServiceError)serializer.Deserialize(stream);
-                return new ServiceManagementClientException(message.StatusCode,
-                    new ServiceManagementError
-                    {
-                        Code = message.StatusCode.ToString(),
-                        Message = serviceError.Message
-                    },
-                    string.Empty);
-            }
-        }
-
-        /// <summary>
-        ///     Unwraps error message and creates ServiceManagementClientException.
-        /// </summary>
-        private static ServiceManagementClientException CreateExceptionFromJson(HttpStatusCode statusCode, string content)
-        {
-            var exception = new ServiceManagementClientException(statusCode,
-                new ServiceManagementError
-                {
-                    Code = statusCode.ToString(),
-                    Message = content
-                },
-                string.Empty);
-            return exception;
-        }
-
-        /// <summary>
-        ///     Creates and initialise instance of HttpClient
-        /// </summary>
-        /// <returns></returns>
-        private static HttpClient CreateCloudGameHttpClient(SubscriptionData subscription)
-        {
-            var requestHandler = new WebRequestHandler();
-            requestHandler.ClientCertificates.Add(subscription.Certificate);
-            var endpoint = new StringBuilder(General.EnsureTrailingSlash(subscription.ServiceEndpoint));
-            endpoint.Append(subscription.SubscriptionId);
-
-            HttpClient client = HttpClientHelper.CreateClient(endpoint.ToString(), handler: requestHandler);
-            client.DefaultRequestHeaders.Add(CloudGameUriElements.XblCorrelationHeader, Guid.NewGuid().ToString());
-            client.DefaultRequestHeaders.Add(Microsoft.WindowsAzure.ServiceManagement.Constants.VersionHeaderName, "2012-08-01");
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CloudGameUriElements.ApplicationJsonMediaType));
-            return client;
-        }
-
-        /// <summary>
-        ///     Creates and initialise instance of HttpClient
-        /// </summary>
-        /// <returns></returns>
-        private static HttpClient CreateCloudGameXmlClient(SubscriptionData subscription)
-        {
-            var requestHandler = new WebRequestHandler();
-            requestHandler.ClientCertificates.Add(subscription.Certificate);
-            var endpoint = new StringBuilder(General.EnsureTrailingSlash(subscription.ServiceEndpoint));
-            endpoint.Append(subscription.SubscriptionId);
-
-            HttpClient client = HttpClientHelper.CreateClient(endpoint.ToString(), handler: requestHandler);
-            client.DefaultRequestHeaders.Add(CloudGameUriElements.XblCorrelationHeader, Guid.NewGuid().ToString());
-            client.DefaultRequestHeaders.Add(Microsoft.WindowsAzure.ServiceManagement.Constants.VersionHeaderName, "2012-08-01");
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CloudGameUriElements.ApplicationXmlMediaType));
-            return client;
-        }
-
-        /// <summary>
-        /// Write out object to JSON string.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value">The value.</param>
-        /// <returns>A string of JSON</returns>
-        public static string ToJson<T>(T value)
-        {
-            var serializer = new DataContractJsonSerializer(typeof(T));
-            using (MemoryStream stream = new MemoryStream())
-            {
-                serializer.WriteObject(stream, value);
-                return Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int)stream.Length);
-            }
-        }
-
-        public static TResult DeserializeJsonToObject<TResult>(string json)
-        {
-            TResult output = default(TResult);
-            using (MemoryStream mstream = new MemoryStream(System.Text.UTF8Encoding.UTF8.GetBytes(json)))
-            {
-                DataContractJsonSerializer dcs = new DataContractJsonSerializer(typeof(TResult));
-                output = (TResult)dcs.ReadObject(mstream);
-            }
-
-            return output;
+            return _httpClient.PutAsync(url, null).ContinueWith(tr => ClientHelper.ProcessJsonResponse<bool>(tr));
         }
     }
 }

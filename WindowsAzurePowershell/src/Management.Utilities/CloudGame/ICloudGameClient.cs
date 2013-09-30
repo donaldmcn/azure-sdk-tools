@@ -26,26 +26,35 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
     public interface ICloudGameClient
     {
         /// <summary>
-        ///     Gets the game images.
+        ///     Gets the game packages.
         /// </summary>
-        /// <param name="cloudGameId">The cloud game id.</param>
+        /// <param name="cloudGameName">The cloud game id.</param>
         /// <returns></returns>
-        Task<CloudGameImageCollectionResponse> GetGameImages(string cloudGameId);
+        Task<CloudGameImageCollectionResponse> GetGamePackages(string cloudGameName);
 
         /// <summary>
-        ///     Creates the cloud game image.
+        ///     Upload package components to a cloud game.
         /// </summary>
-        /// <param name="cloudGameId">The cloud game name.</param>
-        /// <param name="image">The game image.</param>
-        /// <param name="cspkg">The game CSPKG.</param>
-        /// <param name="cscfg">The game CSCFG.</param>
-        /// <param name="asset">The game asset.</param>
-        /// <returns></returns>
-        Task<CloudGameImage> CreateGameImage(string cloudGameId,
-                            CloudGameImage image,
-                            Stream cspkg,
-                            Stream cscfg,
-                            Stream asset);
+        /// <param name="cloudGameName">The cloud game name.</param>
+        /// <param name="packageName">The name of the package</param>
+        /// <param name="maxPlayers">The max number of players allowed</param>
+        /// <param name="assetId">The id of a previously uploaded asset file</param>
+        /// <param name="cspkgFileName">The name of the local cspkg file name</param>
+        /// <param name="cspkgStream">The cspkg file stream</param>
+        /// <param name="cscfgFileName">The name of the local cscfg file name</param>
+        /// <param name="cscfgStream">The game cscfg file stream</param>
+        /// <returns>
+        /// True if successful
+        /// </returns>
+        Task<bool> CreateGamePackage(
+            string cloudGameName,
+            string packageName,
+            int maxPlayers,
+            string assetId,
+            string cspkgFileName,
+            Stream cspkgStream,
+            string cscfgFileName,
+            Stream cscfgStream);
 
         /// <summary>
         ///     Remove the game images.
@@ -66,10 +75,11 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         ///     Creates the cloud game mode.
         /// </summary>
         /// <param name="cloudGameId">The cloud game id.</param>
-        /// <param name="gameMode">The game mode.</param>
+        /// <param name="gameModeName">The game mode name.</param>
+        /// <param name="gameModeFileName">The game mode original filename.</param>
         /// <param name="gameModeStream">The game mode stream.</param>
         /// <returns></returns>
-        Task<CreateGameModeResponse> CreateGameMode(string cloudGameId, GameMode gameMode, Stream gameModeStream);
+        Task<CreateGameModeResponse> CreateGameMode(string cloudGameId, string gameModeName, string gameModeFileName, Stream gameModeStream);
 
         /// <summary>
         ///     Remove the game mode.
@@ -106,18 +116,23 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         /// <summary>
         ///     Gets the game assets.
         /// </summary>
-        /// <param name="cloudGameId">The cloud game id.</param>
+        /// <param name="cloudGameName">The cloud game id.</param>
         /// <returns></returns>
-        Task<CloudGameAssetCollectionResponse> GetGameAssets(string cloudGameId);
+        Task<CloudGameAssetCollectionResponse> GetGameAssets(string cloudGameName);
 
         /// <summary>
         ///     Creates the game asset.
         /// </summary>
-        /// <param name="subscriptionId">The subscription id.</param>
-        /// <param name="cloudGameId">The cloud game id.</param>
-        /// <param name="assetFile">The asset file.</param>
+        /// <param name="cloudGameName">The cloud game name.</param>
+        /// <param name="gameAssetName">The asset name.</param>
+        /// <param name="gameAssetFileName">The asset filename.</param>
+        /// <param name="gameAssetstream">The asset filestream.</param>
         /// <returns></returns>
-        Task<PostCloudGameAssetResponse> CreateGameAsset(string cloudGameId, CloudGameAssetRequest assetRequest, Stream assetFile);
+        Task<PostCloudGameAssetResponse> CreateGameAsset(
+            string cloudGameName, 
+            string gameAssetName, 
+            string gameAssetFileName, 
+            Stream gameAssetStream);
 
         /// <summary>
         ///     Remove the game asset.
@@ -149,13 +164,30 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame
         Task<ServicePoolData> GetGameServicepoolsReport(string cloudGameId);
 
         /// <summary>
-        ///     Creates the cloud game resource.
+        ///     Creates a new cloud game resource.
         /// </summary>
-        /// <param name="game">The game resource.</param>
-        /// <param name="schemaFileName">The schema file name.</param>
-        /// <param name="schemaStream">The schema stream.</param>
+        /// <param name="titleId">The title ID within the subscription to use (in Decimal form)</param>
+        /// <param name="sandboxes">A comma seperated list of sandbox names</param>
+        /// <param name="resourceSetIds">A comma seperated list of resource set IDs</param>
+        /// <param name="name">The name of the Cloud Game</param>
+        /// <param name="schemaName">The name of the game mode schema to sue</param>
+        /// <param name="schemaFileName">The local schema file name (only used for reference)</param>
+        /// <param name="schemaStream">The schema data as a file stream.</param>
         /// <returns>The cloud task for completion</returns>
-        Task<bool> CreateGameService(CloudGames game, string schemaFileName, Stream schemaStream);
+        Task<bool> CreateGameService(string titleId,
+            string sandboxes,
+            string resourceSetIds,
+            string name,
+            string schemaName,
+            string schemaFileName, 
+            Stream schemaStream);
+
+        /// <summary>
+        /// Removes a Game Service
+        /// </summary>
+        /// <param name="name">The service to remove</param>
+        /// <returns></returns>
+        Task<bool> RemoveGameService(string name);
 
         /// <summary>
         /// Gets the cloud service.

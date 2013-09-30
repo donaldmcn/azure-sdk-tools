@@ -14,6 +14,7 @@
 
 namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
 {
+    using System.Collections.Generic;
     using System.Runtime.Serialization;
 
     /// <summary>
@@ -21,7 +22,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
     /// </summary>
     [DataContract(Namespace = "")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Used by JavaScriptSerializer")]
-    public class CloudGameImage
+    public class CloudGamePackage
     {
         /// <summary>
         /// Gets or sets the name.
@@ -30,7 +31,20 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// The name.
         /// </value>
         [DataMember(Name = "name")]
-        public string name
+        public string packageName
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the min players.
+        /// </summary>
+        /// <value>
+        /// The max players.
+        /// </value>
+        [DataMember(Name = "minRequiredPlayers")]
+        public string minRequiredPlayers
         {
             get;
             set;
@@ -42,21 +56,8 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// <value>
         /// The max players.
         /// </value>
-        [DataMember(Name = "maxPlayers")]
-        public string maxPlayers
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets the status.
-        /// </summary>
-        /// <value>
-        /// The status.
-        /// </value>
-        [DataMember(Name = "status")]
-        public string status
+        [DataMember(Name = "maxRequiredPlayers")]
+        public string maxRequiredPlayers
         {
             get;
             set;
@@ -68,34 +69,18 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// <value>
         /// The id.
         /// </value>
-        [DataMember(Name = "id")]
-        public string id
+        [DataMember(Name = "gsiSetId")]
+        public string packageId
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Gets or sets the display name.
-        /// </summary>
-        [DataMember(Name = "displayName")]
-        public string displayName
-        {
-            get
-            {
-                return this.name;
-            }
-
-            set
-            {
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the name of the package file.
         /// </summary>
-        [DataMember(Name = "packageFile")]
-        public string packageFile
+        [DataMember(Name = "cspkgFileName")]
+        public string cspkgFileName
         {
             get;
             set;
@@ -104,18 +89,28 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// <summary>
         /// Gets or sets the name of the package config file.
         /// </summary>
-        [DataMember(Name = "configFile")]
-        public string configFile
+        [DataMember(Name = "cscfgFileName")]
+        public string cscfgFileName
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Gets or sets the name of the package asset file.
+        /// Gets or sets the Ids of the package asset file(s).
         /// </summary>
-        [DataMember(Name = "assetFile")]
-        public string assetFile
+        [DataMember(Name = "gsiAssetIds")]
+        public List<string> assetIds
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the Ids of the package certificate(s).
+        /// </summary>
+        [DataMember(Name = "certificateIds")]
+        public List<string> certificateIds
         {
             get;
             set;

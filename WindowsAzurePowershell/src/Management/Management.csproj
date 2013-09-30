@@ -187,6 +187,7 @@
     <Compile Include="CloudGame\RemoveAzureGameCertificateCommand.cs" />
     <Compile Include="CloudGame\RemoveAzureGameModeCommand.cs" />
     <Compile Include="CloudGame\RemoveAzureGamePackageCommand.cs" />
+    <Compile Include="CloudGame\RemoveAzureGameService.cs" />
     <Compile Include="CloudService\Development\DisableAzureRemoteDesktop.cs" />
     <Compile Include="CloudService\Development\EnableAzureMemcacheRole.cs" />
     <Compile Include="CloudService\Development\EnableAzureRemoteDesktop.cs" />

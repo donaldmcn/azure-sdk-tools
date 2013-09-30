@@ -19,9 +19,8 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
     /// <summary>
     /// The cloud game definition.
     /// </summary>
-    //[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Used by JavaScriptSerializer")]
     [DataContract(Namespace = "")]
-    public class CloudGames
+    public class CloudGame
     {
         /// <summary>
         /// Gets or sets the name.

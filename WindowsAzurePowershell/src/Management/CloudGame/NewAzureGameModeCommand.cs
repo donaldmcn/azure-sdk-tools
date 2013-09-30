@@ -26,15 +26,19 @@ namespace Microsoft.WindowsAzure.Management.CloudGame
     [Cmdlet(VerbsCommon.New, "AzureGameMode"), OutputType(typeof(CreateGameModeResponse))]
     public class NewGameModeCommand : AzureCloudGameHttpClientCommandBase
     {
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game id.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game name.")]
         [ValidateNotNullOrEmpty]
-        public string CloudGameId { get; set; }
+        public string CloudGameName { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The could game mode.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The name of the game mode.")]
         [ValidateNotNullOrEmpty]
-        public GameMode GameMode { get; set; }
+        public string GameModeName { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The could game mode stream.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The original filename of the game mode file.")]
+        [ValidateNotNullOrEmpty]
+        public string GameModeFileName { get; set; }
+
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode content stream.")]
         [ValidateNotNullOrEmpty]
         public Stream GameModeStream { get; set; }
 
@@ -45,7 +49,7 @@ namespace Microsoft.WindowsAzure.Management.CloudGame
             CloudGameClient = CloudGameClient ?? new CloudGameClient(CurrentSubscription, WriteDebug);
             CreateGameModeResponse result = null;
 
-            CatchAggregatedExceptionFlattenAndRethrow(() => { result = CloudGameClient.CreateGameMode(CloudGameId, GameMode, GameModeStream).Result; });
+            CatchAggregatedExceptionFlattenAndRethrow(() => { result = CloudGameClient.CreateGameMode(CloudGameName, GameModeName, GameModeFileName, GameModeStream).Result; });
             WriteObject(result);
         }
     }

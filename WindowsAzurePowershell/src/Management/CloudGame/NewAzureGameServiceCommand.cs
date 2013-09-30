@@ -27,11 +27,27 @@ namespace Microsoft.WindowsAzure.Management.CloudGame
     [Cmdlet(VerbsCommon.New, "AzureGameService"), OutputType(typeof(bool))]
     public class NewGameServiceCommand : AzureCloudGameHttpClientCommandBase
     {
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Title Id.")]
         [ValidateNotNullOrEmpty]
-        public CloudGames GameImage { get; set; }
+        public string TitleId { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game schema file name.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The sandboxes to use (comma seperated list.)")]
+        [ValidateNotNullOrEmpty]
+        public string Sandboxes { get; set; }
+
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The resourceSetIds to use (comma seperated list.)")]
+        [ValidateNotNullOrEmpty]
+        public string ResourceSetIds { get; set; }
+
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Cloud Game name")]
+        [ValidateNotNullOrEmpty]
+        public string Name { get; set; }
+
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Cloud mode schema name")]
+        [ValidateNotNullOrEmpty]
+        public string SchemaName { get; set; }
+
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Cloud mode schema local filename")]
         [ValidateNotNullOrEmpty]
         public string SchemaFileName { get; set; }
 
@@ -44,9 +60,16 @@ namespace Microsoft.WindowsAzure.Management.CloudGame
         public override void ExecuteCmdlet()
         {
             CloudGameClient = CloudGameClient ?? new CloudGameClient(CurrentSubscription, WriteDebug);
-            bool result = false;
+            var result = false;
 
-            CatchAggregatedExceptionFlattenAndRethrow(() => { result = CloudGameClient.CreateGameService(GameImage, SchemaFileName, SchemaStream).Result; });
+            CatchAggregatedExceptionFlattenAndRethrow(() => { result = CloudGameClient.CreateGameService(
+                TitleId,
+                Sandboxes,
+                ResourceSetIds,
+                Name,
+                SchemaName,
+                SchemaFileName,
+                SchemaStream).Result; });
             WriteObject(result);
         }
     }

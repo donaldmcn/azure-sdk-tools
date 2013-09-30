@@ -24,37 +24,59 @@ namespace Microsoft.WindowsAzure.Management.CloudGame
     /// <summary>
     /// Create cloud game package.
     /// </summary>
-    [Cmdlet(VerbsCommon.New, "AzureGamePackage"), OutputType(typeof(CloudGameImage))]
+    [Cmdlet(VerbsCommon.New, "AzureGamePackage"), OutputType(typeof(bool))]
     public class NewGamePackageCommand : AzureCloudGameHttpClientCommandBase
     {
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game id.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game Name.")]
         [ValidateNotNullOrEmpty]
-        public string CloudGameId { get; set; }
+        public string CloudGameName { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game image.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The name of the package.")]
         [ValidateNotNullOrEmpty]
-        public CloudGameImage GameImage { get; set; }
+        public string PackageName { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game CSPKG.")]
-        [ValidateNotNullOrEmpty]
-        public Stream CsPkg { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The maximum number of players allowed.")]
+        [ValidateNotNull]
+        public int MaxPlayers { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game CSCFG.")]
-        [ValidateNotNullOrEmpty]
-        public Stream CsCfg { get; set; }
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The id of the asset file to use")]
+        public string AssetId { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game asset.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The name of the local cspkg file")]
         [ValidateNotNullOrEmpty]
-        public Stream Asset { get; set; }
+        public string CspkgFileName { get; set; }
+
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game CSPKG file stream.")]
+        [ValidateNotNullOrEmpty]
+        public Stream CspkgStream { get; set; }
+
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The name of the local cscfg file")]
+        [ValidateNotNullOrEmpty]
+        public string CscfgFileName { get; set; }
+
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game CSCFG file stream.")]
+        [ValidateNotNullOrEmpty]
+        public Stream CscfgStream { get; set; }
 
         public ICloudGameClient CloudGameClient { get; set; }
 
         public override void ExecuteCmdlet()
         {
             CloudGameClient = CloudGameClient ?? new CloudGameClient(CurrentSubscription, WriteDebug);
-            CloudGameImage result = null;
-
-            CatchAggregatedExceptionFlattenAndRethrow(() => { result = CloudGameClient.CreateGameImage(CloudGameId, GameImage, CsPkg, CsCfg, Asset).Result; });
+            var result = false;
+            CatchAggregatedExceptionFlattenAndRethrow(
+                () =>
+                {
+                    result = CloudGameClient.CreateGamePackage(
+                        CloudGameName,
+                        PackageName,
+                        MaxPlayers,
+                        AssetId,
+                        CspkgFileName,
+                        CspkgStream,
+                        CscfgFileName,
+                        CscfgStream).Result; 
+                });
             WriteObject(result);
         }
     }

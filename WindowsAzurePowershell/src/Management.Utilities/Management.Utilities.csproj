@@ -136,7 +136,7 @@
     </Reference>
     <Reference Include="Microsoft.WindowsAzure.StorageClient" />
     <Reference Include="Newtonsoft.Json">
-     <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -167,12 +167,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CloudGame\CloudGameClient.cs" />
+    <Compile Include="CloudGame\CloudGameClientHelper.cs" />
     <Compile Include="CloudGame\CloudGameUriElements.cs" />
     <Compile Include="CloudGame\Contract\Requests\AzureResourceProviderContracts.cs" />
     <Compile Include="CloudGame\Contract\Requests\CloudGame.cs" />
     <Compile Include="CloudGame\Contract\Requests\CloudGameAssetRequest.cs" />
     <Compile Include="CloudGame\Contract\Requests\CloudGameCertificateRequest.cs" />
-    <Compile Include="CloudGame\Contract\Requests\CloudGameImage.cs" />
+    <Compile Include="CloudGame\Contract\Requests\CloudGamePackage.cs" />
     <Compile Include="CloudGame\Contract\Requests\CloudGameImageRequest.cs" />
     <Compile Include="CloudGame\Contract\Requests\CloudGameVariantRequest.cs" />
     <Compile Include="CloudGame\Contract\Requests\CloudGameVariantSchemaRequest.cs" />

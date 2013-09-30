@@ -27,17 +27,21 @@ namespace Microsoft.WindowsAzure.Management.CloudGame
     [Cmdlet(VerbsCommon.New, "AzureGameAsset"), OutputType(typeof(PostCloudGameAssetResponse))]
     public class NewAzureGameAssetCommand : AzureCloudGameHttpClientCommandBase
     {
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game id.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game Name.")]
         [ValidateNotNullOrEmpty]
-        public string CloudGameId { get; set; }
+        public string CloudGameName { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The asset request.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The name of the game asset.")]
         [ValidateNotNullOrEmpty]
-        public CloudGameAssetRequest AssetRequest { get; set; }
+        public string GameAssetName { get; set; }
 
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The original filename of the game asset file.")]
+        [ValidateNotNullOrEmpty]
+        public string GameAssetFileName { get; set; }
+        
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The asset file.")]
         [ValidateNotNullOrEmpty]
-        public Stream AssetFile { get; set; }
+        public Stream GameAssetStream { get; set; }
 
         public ICloudGameClient CloudGameClient { get; set; }
 
@@ -46,7 +50,7 @@ namespace Microsoft.WindowsAzure.Management.CloudGame
             CloudGameClient = CloudGameClient ?? new CloudGameClient(CurrentSubscription, WriteDebug);
             PostCloudGameAssetResponse result = null;
 
-            CatchAggregatedExceptionFlattenAndRethrow(() => { result = CloudGameClient.CreateGameAsset(CloudGameId, AssetRequest, AssetFile).Result; });
+            CatchAggregatedExceptionFlattenAndRethrow(() => { result = CloudGameClient.CreateGameAsset(CloudGameName, GameAssetName, GameAssetFileName, GameAssetStream).Result; });
             WriteObject(result);
         }
     }
