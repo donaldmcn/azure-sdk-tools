@@ -12,7 +12,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
-namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
+namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
     using System;
     using System.Collections.Generic;
@@ -631,12 +631,10 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
     [CollectionDataContract(Name = "Resources", ItemName = "Resource", Namespace = "http://schemas.microsoft.com/windowsazure")]
     public class ResourceList : List<Resource>
     {
-        //public ResourceList();
-        //public ResourceList(IEnumerable<Resource> resources);
     }
 
-    [CollectionDataContract(Name = "CloudGames", ItemName = "CloudGames", Namespace = "http://schemas.microsoft.com/windowsazure")]
-    public class CloudGamesList : List<CloudGame>
+    [CollectionDataContract(Name = "XblCompute", ItemName = "XblCompute", Namespace = "http://schemas.microsoft.com/windowsazure")]
+    public class XblComputeColletion : List<XblCompute>
     {
     }
 
@@ -644,8 +642,6 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
     [DataContract(Namespace = "http://schemas.microsoft.com/windowsazure")]
     public class CloudService : IExtensibleDataObject
     {
-        //public CloudService();
-
         [DataMember(Order = 3, EmitDefaultValue = false)]
         public string Description { get; set; }
         public ExtensionDataObject ExtensionData { get; set; }
@@ -660,9 +656,8 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
     }
 
     /// <summary>
-    /// The game certificate contract.
+    /// The XblCertificate contract.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Used by JavaScriptSerializer")]
     [DataContract(Namespace = "")]
     public sealed class GameCertificate
     {
@@ -670,7 +665,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the name.
         /// </summary>
         [DataMember(Name = "name")]
-        public string name
+        public string Name
         {
             get;
             set;
@@ -680,15 +675,11 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the display name.
         /// </summary>
         [DataMember(Name = "displayName")]
-        public string displayName
+        public string DisplayName
         {
             get
             {
-                return this.name;
-            }
-
-            set
-            {
+                return this.Name;
             }
         }
 
@@ -696,7 +687,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the status.
         /// </summary>
         [DataMember(Name = "status")]
-        public string status
+        public string Status
         {
             get;
             set;
@@ -706,15 +697,11 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the type.
         /// </summary>
         [DataMember(Name = "type")]
-        public string type
+        public string Type
         {
             get
             {
-                return EntityTypeConstants.GameCertificate;
-            }
-
-            set
-            {
+                return EntityTypeConstants.Certificate;
             }
         }
 
@@ -722,7 +709,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the name of the file.
         /// </summary>
         [DataMember(Name = "fileName")]
-        public string fileName
+        public string FileName
         {
             get;
             set;
@@ -732,7 +719,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the password.
         /// </summary>
         [DataMember(Name = "password")]
-        public string password
+        public string Password
         {
             get;
             set;
@@ -742,7 +729,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the thumbprint.
         /// </summary>
         [DataMember(Name = "thumbprint")]
-        public string thumbprint
+        public string Thumbprint
         {
             get;
             set;
@@ -752,7 +739,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the expires on.
         /// </summary>
         [DataMember(Name = "expiresOn")]
-        public string expiresOn
+        public string ExpiresOn
         {
             get;
             set;
@@ -762,7 +749,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
         /// Gets or sets the id.
         /// </summary>
         [DataMember(Name = "id")]
-        public string id
+        public string Id
         {
             get;
             set;

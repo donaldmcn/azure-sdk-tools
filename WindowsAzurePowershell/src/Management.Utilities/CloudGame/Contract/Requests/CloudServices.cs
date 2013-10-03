@@ -14,32 +14,40 @@
 
 namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
+    using System;
     using System.Runtime.Serialization;
+    using System.Xml;
 
     /// <summary>
-    /// A collection of cloud game certificates
+    /// The cloud game definition.
     /// </summary>
+    //[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Used by JavaScriptSerializer")]
     [DataContract(Namespace = "")]
-    public class DashboardSummary
+    public class CloudServices
     {
         /// <summary>
-        /// Gets or sets the chart data.
+        /// Gets or sets the default service name.
         /// </summary>
-        [DataMember(Name = "chartData")]
-        public ChartData ChartData
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = "Name")]
+        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the usage data.
+        /// Gets or sets the service description.
         /// </summary>
-        [DataMember(Name = "usageData")]
-        public UsageData UsageData
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = "Description")]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the preferred region
+        /// </summary>
+        [DataMember(Name = "GeoRegion")]
+        public string GeoRegion { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service lable.
+        /// </summary>
+        [DataMember(Name = "Label")]
+        public string Label { get; set; }
     }
 }
+

@@ -1,7 +1,4 @@
-﻿// ----------------------------------------------------------------------------------
-//
-// Copyright Microsoft Corporation
-// Licensed under the Apache License, Version 2.0 (the "License");
+﻿// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // http://www.apache.org/licenses/LICENSE-2.0
@@ -16,30 +13,25 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
     using System.Runtime.Serialization;
 
-    /// <summary>
-    /// A collection of cloud game certificates
-    /// </summary>
     [DataContract(Namespace = "")]
-    public class DashboardSummary
+    public class XblPackagePostResponse
     {
         /// <summary>
-        /// Gets or sets the chart data.
+        /// Gets or sets the gsi id.
         /// </summary>
-        [DataMember(Name = "chartData")]
-        public ChartData ChartData
-        {
-            get;
-            set;
-        }
+        /// <value>
+        /// The gsi id.
+        /// </value>
+        [DataMember(Name = "packageId")]
+        public string GsiId{ get; set; }
 
         /// <summary>
-        /// Gets or sets the usage data.
+        /// Gets or sets the pre-authenticated url of the gsi cspkg.
         /// </summary>
-        [DataMember(Name = "usageData")]
-        public UsageData UsageData
-        {
-            get;
-            set;
-        }
+        /// <value>
+        /// The pre-authenticated url.
+        /// </value>
+        [DataMember(Name = "packageCspkgUrl")]
+        public string CspkgPreAuthUrl{ get; set; }
     }
 }

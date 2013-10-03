@@ -12,7 +12,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
-namespace Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract
+namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
     using System.Runtime.Serialization;
     using System.Xml;

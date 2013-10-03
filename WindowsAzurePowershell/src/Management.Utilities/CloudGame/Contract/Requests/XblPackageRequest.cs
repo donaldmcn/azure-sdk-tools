@@ -15,18 +15,16 @@
 namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
     using System.Runtime.Serialization;
-    using System.Collections.Generic;
 
-    /// <summary>
-    /// The game mode object.
-    /// </summary>
-    [DataContract]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Used by JavaScriptSerializer")]
-    public sealed class GameMode
+    [DataContract(Namespace = "")]
+    public class XblPackageRequest
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [DataMember(Name = "name")]
         public string Name
         {
@@ -35,57 +33,65 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
         }
 
         /// <summary>
-        /// Gets or sets the display name.
+        /// Gets or sets the developer facing file name of the gsi cspkg.
         /// </summary>
-        [DataMember(Name = "displayName")]
-        public string DisplayName
-        {
-            get
-            {
-                return this.Name;
-            }
-            set{ }
-        }
-
-        /// <summary>
-        /// Gets or sets the type.
-        /// </summary>
-        [DataMember(Name = "type")]
-        public string Type
-        {
-            get
-            {
-                return EntityTypeConstants.GameMode;
-            }
-
-            set { }
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the file.
-        /// </summary>
-        [DataMember(Name = "fileName")]
-        public string FileName
+        /// <value>
+        /// The name of the CSPKG file.
+        /// </value>
+        [DataMember(Name = "cspkgFileName")]
+        public string CspkgFilename
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Gets or sets the status.
+        /// Gets or sets the developer facing file name of the gsi cscfg.
         /// </summary>
-        [DataMember(Name = "status")]
-        public string Status
+        /// <value>
+        /// The name of the CSCFG file.
+        /// </value>
+        [DataMember(Name = "cscfgFileName")]
+        public string CscfgFilename
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Gets or sets the id.
+        /// Gets or sets the asset id to be associated with the package..
         /// </summary>
-        [DataMember(Name = "id")]
-        public string Id
+        /// <value>
+        /// The id of the asset file.
+        /// </value>
+        [DataMember(Name = "assetId")]
+        public string AssetId
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets MinRequiredPlayers, which defines the minimum number of players needed in a session hosted by the GSI.
+        /// </summary>
+        /// <value>
+        /// The min required players.
+        /// </value>
+        [DataMember(Name = "minRequiredPlayers")]
+        public int MinRequiredPlayers
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets MaxAllowedPlayers, which defines how many players fits in a session hosted by the GSI.
+        /// </summary>
+        /// <value>
+        /// The max allowed players.
+        /// </value>
+        [DataMember(Name = "maxRequiredPlayers")]
+        public int MaxAllowedPlayers
         {
             get;
             set;

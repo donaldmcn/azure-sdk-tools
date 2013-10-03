@@ -14,29 +14,23 @@
 
 namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
+    using System.Collections.Generic;
     using System.Runtime.Serialization;
 
     /// <summary>
-    /// A collection of cloud game certificates
+    /// A collection of XblPackage response
     /// </summary>
     [DataContract(Namespace = "")]
-    public class DashboardSummary
+    public class XblPackageCollectionResponse
     {
         /// <summary>
-        /// Gets or sets the chart data.
+        /// Gets or sets the XblPackage response.
         /// </summary>
-        [DataMember(Name = "chartData")]
-        public ChartData ChartData
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets the usage data.
-        /// </summary>
-        [DataMember(Name = "usageData")]
-        public UsageData UsageData
+        /// <value>
+        /// The XblPackage response.
+        /// </value>
+        [DataMember(Name = "cloudGameImages", Order = 0)]
+        public List<XblPackage> XblPackages
         {
             get;
             set;

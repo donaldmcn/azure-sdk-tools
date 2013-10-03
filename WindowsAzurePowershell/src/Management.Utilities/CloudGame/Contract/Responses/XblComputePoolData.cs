@@ -14,32 +14,40 @@
 
 namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
+    using System.Collections.Generic;
     using System.Runtime.Serialization;
 
-    /// <summary>
-    /// A collection of cloud game certificates
-    /// </summary>
-    [DataContract(Namespace = "")]
-    public class DashboardSummary
+    [DataContract]
+    public class XblComputePoolData
     {
         /// <summary>
-        /// Gets or sets the chart data.
+        /// Gets or sets the total.
         /// </summary>
-        [DataMember(Name = "chartData")]
-        public ChartData ChartData
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = "total")]
+        public int Total { get; set; }
 
         /// <summary>
-        /// Gets or sets the usage data.
+        /// Gets or sets the total active.
         /// </summary>
-        [DataMember(Name = "usageData")]
-        public UsageData UsageData
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = "totalActive")]
+        public int TotalActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total stand by.
+        /// </summary>
+        [DataMember(Name = "totalStandBy")]
+        public int TotalStandBy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total quarantined.
+        /// </summary>
+        [DataMember(Name = "totalQuarantined")]
+        public int TotalQuarantined { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pools.
+        /// </summary>
+        [DataMember(Name = "pools")]
+        public List<GeoRegionPoolInfo> Pools { get; set; }
     }
 }

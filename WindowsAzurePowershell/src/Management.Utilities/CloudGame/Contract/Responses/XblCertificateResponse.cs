@@ -16,57 +16,82 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
     using System.Runtime.Serialization;
 
-    /// <summary>
-    /// A collection of cloud game certificates
-    /// </summary>
     [DataContract(Namespace = "")]
-    public class UsageData
+    public class XblCertificateResponse
     {
         /// <summary>
-        /// Gets or sets the active instance count.
+        /// Gets or sets the name.
         /// </summary>
-        [DataMember(Name = "activeInstanceCount")]
-        public int ActiveInstanceCount
+        /// <value>
+        /// The name.
+        /// </value>
+        [DataMember(Name = "name")]
+        public string Name
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Gets or sets the standby instance count.
+        /// Gets or sets the subject.
         /// </summary>
-        [DataMember(Name = "standbyInstanceCount")]
-        public int StandbyInstanceCount
+        /// <value>
+        /// The subject.
+        /// </value>
+        [DataMember(Name = "subject")]
+        public string Subject
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Gets or sets the quarantined instance count.
+        /// Gets or sets the filename.
         /// </summary>
-        [DataMember(Name = "quarantinedInstanceCount")]
-        public int QuarantinedInstanceCount
+        /// <value>
+        /// The filename.
+        /// </value>
+        [DataMember(Name = "fileName")]
+        public string Filename
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Gets or sets the log capacity.
+        /// Gets or sets the id.
         /// </summary>
-        [DataMember(Name = "logCapacity")]
-        public int LogCapacity
+        /// <value>
+        /// The id.
+        /// </value>
+        [DataMember(Name = "id")]
+        public string Id
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Gets or sets the log usage.
+        /// Gets or sets the thumbprint.
         /// </summary>
-        [DataMember(Name = "logUsage")]
-        public int LogUsage
+        /// <value>
+        /// The thumbprint.
+        /// </value>
+        [DataMember(Name = "thumbprint")]
+        public string Thumbprint
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the expires on.
+        /// </summary>
+        /// <value>
+        /// The expires on.
+        /// </value>
+        [DataMember(Name = "expiresOn")]
+        public string ExpiresOn
         {
             get;
             set;

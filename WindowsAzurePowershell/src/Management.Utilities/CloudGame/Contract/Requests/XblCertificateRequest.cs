@@ -16,27 +16,40 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
     using System.Runtime.Serialization;
 
-    /// <summary>
-    /// A collection of cloud game certificates
-    /// </summary>
     [DataContract(Namespace = "")]
-    public class DashboardSummary
+    public class XblCertificateRequest
     {
         /// <summary>
-        /// Gets or sets the chart data.
+        /// Gets or sets the filename.
         /// </summary>
-        [DataMember(Name = "chartData")]
-        public ChartData ChartData
+        /// <value>
+        /// The filename.
+        /// </value>
+        [DataMember(Name = "fileName")]
+        public string Filename
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Gets or sets the usage data.
+        /// Gets or sets the password.
         /// </summary>
-        [DataMember(Name = "usageData")]
-        public UsageData UsageData
+        /// <value>
+        /// The password.
+        /// </value>
+        [DataMember(Name = "password")]
+        public string Password
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        [DataMember(Name = "name")]
+        public string Name
         {
             get;
             set;

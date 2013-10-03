@@ -60,7 +60,7 @@ namespace Microsoft.WindowsAzure.Management.Test.CloudService
             // Setup
             removeAzureServiceCmdlet.PassThru = true;
             removeAzureServiceCmdlet.Force = true;
-            removeAzureServiceCmdlet.CloudGameName = serviceName;
+            removeAzureServiceCmdlet.AzureGameServicesName = serviceName;
 
             // Test
             removeAzureServiceCmdlet.ExecuteCmdlet();
@@ -75,7 +75,7 @@ namespace Microsoft.WindowsAzure.Management.Test.CloudService
         {
             // Setup
             removeAzureServiceCmdlet.PassThru = true;
-            removeAzureServiceCmdlet.CloudGameName = serviceName;
+            removeAzureServiceCmdlet.AzureGameServicesName = serviceName;
 
             // Test
             removeAzureServiceCmdlet.ExecuteCmdlet();

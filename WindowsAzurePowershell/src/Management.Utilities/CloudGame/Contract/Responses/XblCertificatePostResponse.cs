@@ -1,7 +1,4 @@
-﻿// ----------------------------------------------------------------------------------
-//
-// Copyright Microsoft Corporation
-// Licensed under the Apache License, Version 2.0 (the "License");
+﻿// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // http://www.apache.org/licenses/LICENSE-2.0
@@ -16,27 +13,11 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
 {
     using System.Runtime.Serialization;
 
-    /// <summary>
-    /// A collection of cloud game certificates
-    /// </summary>
     [DataContract(Namespace = "")]
-    public class DashboardSummary
+    public class XblCertificatePostResponse
     {
-        /// <summary>
-        /// Gets or sets the chart data.
-        /// </summary>
-        [DataMember(Name = "chartData")]
-        public ChartData ChartData
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets the usage data.
-        /// </summary>
-        [DataMember(Name = "usageData")]
-        public UsageData UsageData
+        [DataMember(Name = "cloudGameCertificateId")]
+        public string XblCertificateId
         {
             get;
             set;
