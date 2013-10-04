@@ -531,9 +531,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
                 ResourceSets = resourceSetIds,
                 Sandboxes = sandboxes,
                 SchemaName = schemaName,
-                TitleId = titleId,
-                Status = "Creating",                    // BUGBUG... GSRM needs to fix depending on this property being set
-                SchemaId = Guid.NewGuid().ToString()    // BUGBUG... GSRM needs to fix depending on this property being set
+                TitleId = titleId
             };
 
             var putGameRequest = new XblComputeRequest()

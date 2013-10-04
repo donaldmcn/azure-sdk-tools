@@ -26,7 +26,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
         /// <summary>
         /// Gets or sets the cloud game.
         /// </summary>
-        [DataMember(Name = "xblCompute")]
+        [DataMember(Name = "cloudGame")]
         public XblCompute XblCompute
         {
             get;
@@ -36,7 +36,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
         /// <summary>
         /// Gets or sets the Xbl Game Mode schema.
         /// </summary>
-        [DataMember(Name = "xblGameModeSchema")]
+        [DataMember(Name = "variantSchema")]
         public XblGameModeSchemaRequest XblGameModeSchema
         {
             get;

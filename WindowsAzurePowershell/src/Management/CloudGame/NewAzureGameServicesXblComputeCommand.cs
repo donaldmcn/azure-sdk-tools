@@ -25,6 +25,10 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
     [Cmdlet(VerbsCommon.New, "AzureGameServicesXblCompute"), OutputType(typeof(bool))]
     public class NewAzureGameServicesXblComputeCommand : AzureGameServicesHttpClientCommandBase
     {
+        [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Xbox Live compute instance name.")]
+        [ValidateNotNullOrEmpty]
+        public string XblComputeName { get; set; }
+
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Title Id.")]
         [ValidateNotNullOrEmpty]
         public string TitleId { get; set; }
@@ -37,19 +41,15 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
         [ValidateNotNullOrEmpty]
         public string ResourceSetIds { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Cloud Game name")]
-        [ValidateNotNullOrEmpty]
-        public string Name { get; set; }
-
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Cloud mode schema name")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema name")]
         [ValidateNotNullOrEmpty]
         public string SchemaName { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Cloud mode schema local filename")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema local filename")]
         [ValidateNotNullOrEmpty]
         public string SchemaFileName { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The cloud game schema file stream.")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema file stream.")]
         [ValidateNotNullOrEmpty]
         public Stream SchemaStream { get; set; }
 
@@ -64,7 +64,7 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
                 TitleId,
                 Sandboxes,
                 ResourceSetIds,
-                Name,
+                XblComputeName,
                 SchemaName,
                 SchemaFileName,
                 SchemaStream).Result; });
