@@ -102,12 +102,12 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         /// <summary>
         /// The deployments report path.
         /// </summary>
-        public const string DeploymentsReportPath = "/cloudservices/gameservices/resources/~/xboxlivecompute/{0}/poolunits/reports/deployments";
+        public const string DeploymentsReportPath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}/poolunits/reports/deployments";
 
         /// <summary>
         /// The servicepools report path.
         /// </summary>
-        public const string ServicepoolsReportPath = "/cloudservices/gameservices/resources/~/xboxlivecompute/{0}/poolunits/reports/servicepools";
+        public const string ServicepoolsReportPath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}/poolunits/reports/servicepools";
 
         /// <summary>
         /// The put cloud service resource path.
