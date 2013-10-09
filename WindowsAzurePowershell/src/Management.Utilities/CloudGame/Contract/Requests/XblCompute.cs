@@ -120,6 +120,15 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
         public string PublisherId { get; set; }
 
         /// <summary>
+        /// Gets or sets the selection order.
+        /// </summary>
+        /// <value>
+        /// The selection order.
+        /// </value>
+        [DataMember(Name = "selectionOrder")]
+        public int SelectionOrder { get; set; }
+
+        /// <summary>
         /// Gets or sets the type.
         /// </summary>
         [DataMember(Name = "type")]
@@ -144,5 +153,10 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
             }
             set{}
         }
+
+        /// <summary>
+        /// Gets or sets the InErrorState
+        /// </summary>
+        public bool InErrorState { get; set; }
     }
 }

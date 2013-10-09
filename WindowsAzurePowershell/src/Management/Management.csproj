@@ -186,8 +186,8 @@
     <Compile Include="CloudGame\RemoveAzureGameServicesXblAssetCommand.cs" />
     <Compile Include="CloudGame\RemoveAzureGameServicesXblCertificateCommand.cs" />
     <Compile Include="CloudGame\RemoveAzureGameServicesXblGameModeCommand.cs" />
-    <Compile Include="CloudGame\RemoveAzureGameServicesXblPackageCommand.cs" />
     <Compile Include="CloudGame\RemoveAzureGameServicesXblCompute.cs" />
+    <Compile Include="CloudGame\StopAzureGameServicesXblComputeCommand.cs" />
     <Compile Include="CloudService\Development\DisableAzureRemoteDesktop.cs" />
     <Compile Include="CloudService\Development\EnableAzureMemcacheRole.cs" />
     <Compile Include="CloudService\Development\EnableAzureRemoteDesktop.cs" />

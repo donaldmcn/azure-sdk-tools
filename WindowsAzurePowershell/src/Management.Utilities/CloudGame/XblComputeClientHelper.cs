@@ -48,30 +48,35 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblComputeClientHelper
             // See if the cloud service exists, and create it if it does not.
             url = httpXmlClient.BaseAddress + String.Format(CloudGameUriElements.CloudServiceResourcePath);
 
-            var cloudServiceExists = true;
-            CloudService existingCloudService = null;
-            try
-            {
-                existingCloudService = httpXmlClient.GetAsync(url).ContinueWith(tr => ClientHelper.ProcessXmlResponse<CloudService>(tr)).Result;
-            }
-            catch (ServiceManagementClientException ex)
-            {
-                if (ex.HttpStatus != HttpStatusCode.NotFound)
-                {
-                    // Rethrow the exception
-                    throw;
-                }
+            var existingCloudService = httpXmlClient.GetAsync(url).ContinueWith(
+                tr =>
+                    {
+                        // If the request is sucessfull, then deserialize it, otherwise, and 404 is acceptable. All other conditions are
+                        // errors to be returned to the caller
+                        var message = tr.Result;
+                        if (message.IsSuccessStatusCode)
+                        {
+                            return ClientHelper.ProcessXmlResponse<CloudService>(tr);
+                        }
+                        else if (message.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            // Error result, so throw an exception
+                            throw new ServiceManagementClientException(message.StatusCode,
+                                new ServiceManagementError
+                                {
+                                    Code = message.StatusCode.ToString()
+                                },
+                                string.Empty);
 
-                // The cloud service does not exist
-                cloudServiceExists = false;
-            }
+                        }
+                    }).Result;
 
-            if ((existingCloudService != null) && !existingCloudService.Name.Equals(CloudGameUriElements.DefaultServiceName))
-            {
-                cloudServiceExists = false;
-            }
-
-            if (cloudServiceExists)
+            // If the cloud service exists, and it has the DefaultServiceName, then no more work is needed
+            if ((existingCloudService != null) && existingCloudService.Name.Equals(CloudGameUriElements.DefaultServiceName))
             {
                 return;
             }
@@ -98,7 +103,31 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblComputeClientHelper
                         message.StatusCode,
                         new ServiceManagementError { Code = message.StatusCode.ToString() },
                         string.Empty);
-                });
+                }).Wait();
+
+            // Poll RDFE to see if the Cloud Game "resource" has been created
+            var created = false;
+            var numRetries = 0;
+            do
+            {
+                httpXmlClient.GetAsync(url).ContinueWith(
+                    tr =>
+                    {
+                        // If the request is sucessfull, then deserialize it, otherwise, and 404 is acceptable. All other conditions are
+                        // errors to be returned to the caller
+                        if (tr.Result.IsSuccessStatusCode)
+                        {
+                            created = true;
+                        }
+                    }).Wait();
+            }
+            while (!created && (numRetries++ < 10));
+            if (!created)
+            {
+                throw new ServiceManagementClientException(HttpStatusCode.InternalServerError,
+                    new ServiceManagementError { Code = HttpStatusCode.InternalServerError.ToString() },
+                    "Failed to create cloudgame Resource for subscription");                
+            }
         }
 
         /// <summary>
@@ -150,25 +179,30 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblComputeClientHelper
                     var reader = XmlDictionaryReader.CreateTextReader(stream, new XmlDictionaryReaderQuotas());
                     var serviceResponse = (CloudService)ser.ReadObject(reader, true);
 
-                    foreach (var resource in serviceResponse.Resources.Where(resource => resource.OperationStatus.Error == null))
+                    foreach (var resource in serviceResponse.Resources)
                     {
-                        if (resource.IntrinsicSettings == null || resource.IntrinsicSettings.Length == 0)
+                        // If there are no intrinsic settings, or the intrinsic setting is null, then create an empty
+                        // XblCompute in the error state.
+                        if (resource.IntrinsicSettings == null || 
+                            resource.IntrinsicSettings.Length == 0 ||
+                            resource.IntrinsicSettings[0] == null)
                         {
-                            response.Add(new XblCompute() { Name = resource.Name });
+                            response.Add(new XblCompute() { Name = resource.Name, InErrorState = true});
                             continue;
                         }
 
                         var cbData = resource.IntrinsicSettings[0] as XmlCDataSection;
-                        if (cbData == null)
-                        {
-                            continue;
-                        }
-
                         var jsonSer = new DataContractJsonSerializer(typeof(XblCompute));
                         using (var jsonStream = new MemoryStream(UTF8Encoding.UTF8.GetBytes((cbData.Data))))
                         {
-                            var game = (XblCompute)jsonSer.ReadObject(jsonStream);
-                            response.Add(game);
+                            // Deserialize the result from GSRM
+                            var xblCompute = (XblCompute)jsonSer.ReadObject(jsonStream);
+
+                            // Check the error state
+                            xblCompute.InErrorState = resource.OperationStatus.Error != null;
+
+                            // Add the xlbCompute instance to the collection
+                            response.Add(xblCompute);
                         }
                     }
                 }

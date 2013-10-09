@@ -13,6 +13,8 @@
 
 namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
 {
+    using System;
+
     using Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract;
     using Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract;
     using System.IO;
@@ -174,18 +176,22 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         ///     Creates a new XblCompute resource.
         /// </summary>
         /// <param name="titleId">The title ID within the subscription to use (in Decimal form)</param>
+        /// <param name="selectionOrder">The selection order to use</param>
         /// <param name="sandboxes">A comma seperated list of sandbox names</param>
         /// <param name="resourceSetIds">A comma seperated list of resource set IDs</param>
         /// <param name="name">The name of the Cloud Game</param>
+        /// <param name="schemaId">The Id of an existing variant schema</param>
         /// <param name="schemaName">The name of the game mode schema to sue</param>
         /// <param name="schemaFileName">The local schema file name (only used for reference)</param>
         /// <param name="schemaStream">The schema data as a file stream.</param>
         /// <returns>The cloud task for completion</returns>
         Task<bool> NewXblCompute(
 			string titleId,
+            int selectionOrder,
             string sandboxes,
             string resourceSetIds,
             string name,
+            string schemaId,
             string schemaName,
             string schemaFileName, 
             Stream schemaStream);
@@ -210,10 +216,18 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         Task<AzureGameServicesPropertiesResponse> GetAzureGameServicesProperties();
 
         /// <summary>
-        /// Publishes the XblCompute instance async.
+        /// Deploys the XblCompute instance.
         /// </summary>
         /// <param name="xblComputeName">The XblCompute Instance Name.</param>
         /// <returns>The task for completion.</returns>
-        Task<bool> PublishXblComputeAsync(string xblComputeName);
+        Task<bool> DeployXblCompute(string xblComputeName);
+
+        /// <summary>
+        /// Stops the XblCompute instance.
+        /// </summary>
+        /// <param name="xblComputeName">The XblCompute Instance Name.</param>
+        /// <returns>The task for completion.</returns>
+        Task<bool> StopXblCompute(string xblComputeName);
+
     }
 }

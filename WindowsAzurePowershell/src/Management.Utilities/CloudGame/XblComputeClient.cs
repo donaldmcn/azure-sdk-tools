@@ -14,6 +14,8 @@
 
 namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
 {
+    using System.Linq;
+
     using Microsoft.WindowsAzure.Management.Utilities.CloudGame.Contract;
     using Microsoft.WindowsAzure.Management.Utilities.XblComputeClientHelper;
     using Microsoft.WindowsAzure.Management.Utilities.Common;
@@ -487,43 +489,70 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
 
         /// <summary>
         ///     Creates a new XblCompute resource.
+        ///     Caller must supplier either an existing Variant schema ID, or the schemaName, Filename, and content stream
         /// </summary>
         /// <param name="titleId">The title ID within the subscription to use (in Decimal form)</param>
+        /// <param name="selectionOrder">The selection order to use</param>
         /// <param name="sandboxes">A comma seperated list of sandbox names</param>
         /// <param name="resourceSetIds">A comma seperated list of resource set IDs</param>
         /// <param name="name">The name of the Cloud Game</param>
+        /// <param name="schemaId">The SchemaID of an existing Variant Schema</param>
         /// <param name="schemaName">The name of the game mode schema to sue</param>
         /// <param name="schemaFileName">The local schema file name (only used for reference)</param>
         /// <param name="schemaStream">The schema data as a file stream.</param>
         /// <returns>The cloud task for completion</returns>
         public Task<bool> NewXblCompute(
             string titleId,
+            int selectionOrder,
             string sandboxes,
             string resourceSetIds,
             string name,
+            string schemaId,
             string schemaName,
             string schemaFileName, 
             Stream schemaStream)
         {      
-            // Idempotent call to to a first time registration of the cloud service wrapping container.
+            // Idempotent call to do a first time registration of the cloud service wrapping container.
             ClientHelper.RegisterCloudService(_httpClient, _httpXmlClient);
 
-            string schemaContent;
-            using (var streamReader = new StreamReader(schemaStream))
+            XblGameModeSchemaRequest xblGameModeSchemaRequestData = null;
+            if (!String.IsNullOrEmpty(schemaId))
             {
-                schemaContent = streamReader.ReadToEnd();
-            }
-
-            var xblGameModeSchemaRequestData = new XblGameModeSchemaRequest()
-            {
-                Metadata = new XblGameModeSchema()
+                Guid variantSchemaId;
+                if (!Guid.TryParse(schemaId, out variantSchemaId))
                 {
-                    Name = schemaName, 
-                    Filename = schemaFileName, 
-                    TitleId = titleId
-                },
-                Content = schemaContent
-            };
+                    throw new ServiceManagementClientException(HttpStatusCode.BadRequest,
+                        new ServiceManagementError { Code = HttpStatusCode.BadRequest.ToString() },
+                        "Invalid Variant Schema ID provided. Must be a Guid");                                   
+                }
+            }
+            else
+            {
+                // Schema ID not provided, so must have schemaName, etc.
+                if (String.IsNullOrEmpty(schemaName) || String.IsNullOrEmpty(schemaFileName) || schemaStream == null)
+                {
+                    throw new ServiceManagementClientException(HttpStatusCode.BadRequest,
+                        new ServiceManagementError { Code = HttpStatusCode.BadRequest.ToString() },
+                        "Invalid Variant Schema values provided.");                                                      
+                }
+
+                string schemaContent;
+                using (var streamReader = new StreamReader(schemaStream))
+                {
+                    schemaContent = streamReader.ReadToEnd();
+                }
+
+                xblGameModeSchemaRequestData = new XblGameModeSchemaRequest()
+                {
+                    Metadata = new XblGameModeSchema()
+                    {
+                        Name = schemaName,
+                        Filename = schemaFileName,
+                        TitleId = titleId
+                    },
+                    Content = schemaContent
+                };
+            }
 
             var xblCompute = new XblCompute()
             {
@@ -531,14 +560,24 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
                 ResourceSets = resourceSetIds,
                 Sandboxes = sandboxes,
                 SchemaName = schemaName,
-                TitleId = titleId
+                TitleId = titleId,
+                SelectionOrder = selectionOrder
             };
 
             var putGameRequest = new XblComputeRequest()
             {
-                XblCompute = xblCompute,
-                XblGameModeSchema = xblGameModeSchemaRequestData
+                XblCompute = xblCompute
             };
+
+            // If a schemaID is provided, use that in the request, otherwise, add the schema data contract to the put request
+            if (!String.IsNullOrEmpty(schemaId))
+            {
+                xblCompute.SchemaId = schemaId;
+            }
+            else
+            {
+                putGameRequest.XblGameModeSchema = xblGameModeSchemaRequestData;
+            }
 
             var doc = new XmlDocument();
             var resource = new Resource()
@@ -556,25 +595,37 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
             }; 
 
             var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.CloudGameResourcePath, name);
-            var result = _httpClient.PutAsXmlAsync(url, resource).ContinueWith(
+            _httpClient.PutAsXmlAsync(url, resource).ContinueWith(
                 tr =>
-                {
-                    var message = tr.Result;
-                    if (message.IsSuccessStatusCode)
                     {
-                        return true;
-                    }
-
-                    // Error result, so throw an exception
-                    throw new ServiceManagementClientException(message.StatusCode,
-                        new ServiceManagementError
+                        var message = tr.Result;
+                        if (!message.IsSuccessStatusCode)
                         {
-                            Code = message.StatusCode.ToString()
-                        },
-                        string.Empty);
-                }).Result;
+                            // Error result, so throw an exception
+                            throw new ServiceManagementClientException(message.StatusCode,
+                                new ServiceManagementError
+                                {
+                                    Code = message.StatusCode.ToString()
+                                },
+                                string.Empty);
+                        }
 
-            return Task<bool>.Factory.StartNew(() => result);
+                        return true;
+                    }).Wait();
+
+            // Poll RDFE to see if the XblCompute instance has been created
+            var created = false;
+            var numRetries = 0;
+            do
+            {
+                var xblComputeInstances = GetXblComputeInstances().Result;
+                if (xblComputeInstances.Any(xblComputeInstance => xblComputeInstance.Name == name))
+                {
+                    created = true;
+                }
+            }
+            while (!created && (numRetries++ < 10));               
+            return Task<bool>.Factory.StartNew(() => created);
         }
 
         /// <summary>
@@ -640,27 +691,50 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         }
 
         /// <summary>
-        /// Publishes the cloud game async.
+        /// Publishes the cloud game.
         /// </summary>
         /// <param name="xblComputeName">Name of the cloud game.</param>
         /// <returns>The task for completion.</returns>
-        public Task<bool> PublishXblComputeAsync(string xblComputeName)
+        public Task<bool> DeployXblCompute(string xblComputeName)
         {
-            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.PublishCloudGamePath, xblComputeName);
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.DeployCloudGamePath, xblComputeName);
             return _httpClient.PutAsync(url, null).ContinueWith(
                 tr =>
                 {
                     var message = tr.Result;
-                    if (message.IsSuccessStatusCode)
+                    if (!message.IsSuccessStatusCode)
                     {
-                        return true;
+                        // Error result, so throw an exception
+                        throw new ServiceManagementClientException(
+                            message.StatusCode,
+                            new ServiceManagementError { Code = message.StatusCode.ToString() },
+                            string.Empty);
                     }
+                    return true;
+                });
+        }
 
-                    // Error result, so throw an exception
-                    throw new ServiceManagementClientException(
-                        message.StatusCode,
-                        new ServiceManagementError { Code = message.StatusCode.ToString() },
-                        string.Empty);
+        /// <summary>
+        /// Stops the cloud game.
+        /// </summary>
+        /// <param name="xblComputeName">Name of the cloud game.</param>
+        /// <returns>The task for completion.</returns>
+        public Task<bool> StopXblCompute(string xblComputeName)
+        {
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.StopCloudGamePath, xblComputeName);
+            return _httpClient.PutAsync(url, null).ContinueWith(
+                tr =>
+                {
+                    var message = tr.Result;
+                    if (!message.IsSuccessStatusCode)
+                    {
+                        // Error result, so throw an exception
+                        throw new ServiceManagementClientException(
+                            message.StatusCode,
+                            new ServiceManagementError { Code = message.StatusCode.ToString() },
+                            string.Empty);
+                    }
+                    return true;
                 });
         }
     }

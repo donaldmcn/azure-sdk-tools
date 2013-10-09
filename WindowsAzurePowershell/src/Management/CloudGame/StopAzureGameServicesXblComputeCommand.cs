@@ -20,8 +20,8 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
     /// <summary>
     /// Gets cloud game service.
     /// </summary>
-    [Cmdlet("Deploy", "AzureGameServicesXblCompute"), OutputType(typeof(bool))]
-    public class DeployAzureGameServicesXblComputeCommand : AzureGameServicesHttpClientCommandBase
+    [Cmdlet("Stop", "AzureGameServicesXblCompute"), OutputType(typeof(bool))]
+    public class StopAzureGameServicesXblComputeCommand : AzureGameServicesHttpClientCommandBase
     {
         [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The Xbox Live compute instance name.")]
         [ValidateNotNullOrEmpty]
@@ -34,7 +34,7 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
             Client = Client ?? new XblComputeClient(CurrentSubscription, WriteDebug);
             var result = false;
 
-            CatchAggregatedExceptionFlattenAndRethrow(() => { result = Client.DeployXblCompute(XblComputeName).Result; });
+            CatchAggregatedExceptionFlattenAndRethrow(() => { result = Client.StopXblCompute(XblComputeName).Result; });
             WriteObject(result);
         }
     }

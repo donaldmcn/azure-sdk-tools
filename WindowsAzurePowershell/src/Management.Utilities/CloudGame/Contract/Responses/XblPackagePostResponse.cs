@@ -22,7 +22,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
         /// <value>
         /// The gsi id.
         /// </value>
-        [DataMember(Name = "packageId")]
+        [DataMember(Name = "imageId")]
         public string GsiId{ get; set; }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
         /// <value>
         /// The pre-authenticated url.
         /// </value>
-        [DataMember(Name = "packageCspkgUrl")]
+        [DataMember(Name = "imageCspkgUrl")]
         public string CspkgPreAuthUrl{ get; set; }
     }
 }

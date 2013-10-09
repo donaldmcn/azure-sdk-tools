@@ -80,9 +80,14 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         private const string DeleteResourcePath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}/{1}/{2}";
 
         /// <summary>
-        /// The publish cloud game path.
+        /// The deploy cloud game path.
         /// </summary>
-        public const string PublishCloudGamePath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}?operation=publish";
+        public const string DeployCloudGamePath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}?operation=publish";
+
+        /// <summary>
+        /// The stop cloud game path.
+        /// </summary>
+        public const string StopCloudGamePath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}?operation=unpublish";
 
         /// <summary>
         /// The configure cloud game path.

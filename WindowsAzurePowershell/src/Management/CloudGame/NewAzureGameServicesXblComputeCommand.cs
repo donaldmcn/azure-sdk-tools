@@ -33,6 +33,10 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
         [ValidateNotNullOrEmpty]
         public string TitleId { get; set; }
 
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The selection order to use.")]
+        [ValidateNotNullOrEmpty]
+        public int SelectionOrder { get; set; }
+
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The sandboxes to use (comma seperated list.)")]
         [ValidateNotNullOrEmpty]
         public string Sandboxes { get; set; }
@@ -41,15 +45,19 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
         [ValidateNotNullOrEmpty]
         public string ResourceSetIds { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema name")]
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema Id")]
+        [ValidateNotNullOrEmpty]
+        public string SchemaId { get; set; }
+
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema name")]
         [ValidateNotNullOrEmpty]
         public string SchemaName { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema local filename")]
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema local filename")]
         [ValidateNotNullOrEmpty]
         public string SchemaFileName { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema file stream.")]
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The game mode schema file stream.")]
         [ValidateNotNullOrEmpty]
         public Stream SchemaStream { get; set; }
 
@@ -62,9 +70,11 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
 
             CatchAggregatedExceptionFlattenAndRethrow(() => { result = Client.NewXblCompute(
                 TitleId,
+                SelectionOrder,
                 Sandboxes,
                 ResourceSetIds,
                 XblComputeName,
+                SchemaId,
                 SchemaName,
                 SchemaFileName,
                 SchemaStream).Result; });
