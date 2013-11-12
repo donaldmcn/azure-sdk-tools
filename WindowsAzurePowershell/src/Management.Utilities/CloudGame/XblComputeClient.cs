@@ -694,10 +694,12 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         /// Publishes the cloud game.
         /// </summary>
         /// <param name="xblComputeName">Name of the cloud game.</param>
+        /// <param name="sandboxes">Optional, string delimitted list of sandboxes to deploy to</param>
+        /// <param name="geoRegions">Optional, string delimitted list of geo regions to deploy to</param>
         /// <returns>The task for completion.</returns>
-        public Task<bool> DeployXblCompute(string xblComputeName)
+        public Task<bool> DeployXblCompute(string xblComputeName, string sandboxes, string geoRegions)
         {
-            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.DeployCloudGamePath, xblComputeName);
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.DeployCloudGamePath, xblComputeName, sandboxes, geoRegions);
             return _httpClient.PutAsync(url, null).ContinueWith(
                 tr =>
                 {

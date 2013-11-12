@@ -35,6 +35,12 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
         public int Usage { get; set; }
 
         /// <summary>
+        /// Gets or sets the standingby instances.
+        /// </summary>
+        [DataMember(Name = "standingByInstances")]
+        public int StandingByInstances { get; set; }
+
+        /// <summary>
         /// Gets or sets the active instances.
         /// </summary>
         [DataMember(Name = "activeInstances")]

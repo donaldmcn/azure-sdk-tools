@@ -216,11 +216,13 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         Task<AzureGameServicesPropertiesResponse> GetAzureGameServicesProperties();
 
         /// <summary>
-        /// Deploys the XblCompute instance.
+        /// Publishes the cloud game.
         /// </summary>
-        /// <param name="xblComputeName">The XblCompute Instance Name.</param>
+        /// <param name="xblComputeName">Name of the cloud game.</param>
+        /// <param name="sandboxes">Optional, string delimitted list of sandboxes to deploy to</param>
+        /// <param name="geoRegions">Optional, string delimitted list of geo regions to deploy to</param>
         /// <returns>The task for completion.</returns>
-        Task<bool> DeployXblCompute(string xblComputeName);
+        Task<bool> DeployXblCompute(string xblComputeName, string sandboxes, string geoRegions);
 
         /// <summary>
         /// Stops the XblCompute instance.

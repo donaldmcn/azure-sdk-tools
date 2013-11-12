@@ -42,6 +42,12 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute.Contract
         public int TotalUsage { get; set; }
 
         /// <summary>
+        /// Gets or sets the total standingby.
+        /// </summary>
+        [DataMember(Name = "totalStandingBy")]
+        public int TotalStandingBy { get; set; }
+
+        /// <summary>
         /// Gets or sets the total active.
         /// </summary>
         [DataMember(Name = "totalActive")]

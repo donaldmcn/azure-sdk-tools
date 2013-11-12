@@ -27,6 +27,14 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
         [ValidateNotNullOrEmpty]
         public string XblComputeName { get; set; }
 
+        [Parameter(Position = 1, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The sandboxes to deploy to")]
+        [ValidateNotNullOrEmpty]
+        public string Sandboxes { get; set; }
+
+        [Parameter(Position = 2, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The geo Regions to deploy to")]
+        [ValidateNotNullOrEmpty]
+        public string GeoRegions { get; set; }
+
         public IXblComputeClient Client { get; set; }
 
         public override void ExecuteCmdlet()
@@ -34,7 +42,7 @@ namespace Microsoft.WindowsAzure.Management.XblCompute
             Client = Client ?? new XblComputeClient(CurrentSubscription, WriteDebug);
             var result = false;
 
-            CatchAggregatedExceptionFlattenAndRethrow(() => { result = Client.DeployXblCompute(XblComputeName).Result; });
+            CatchAggregatedExceptionFlattenAndRethrow(() => { result = Client.DeployXblCompute(XblComputeName, Sandboxes ?? string.Empty, GeoRegions ?? string.Empty).Result; });
             WriteObject(result);
         }
     }

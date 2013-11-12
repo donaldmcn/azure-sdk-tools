@@ -82,7 +82,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         /// <summary>
         /// The deploy cloud game path.
         /// </summary>
-        public const string DeployCloudGamePath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}?operation=publish";
+        public const string DeployCloudGamePath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}?operation=publish&sandboxes={1}&geoRegion={2}";
 
         /// <summary>
         /// The stop cloud game path.
