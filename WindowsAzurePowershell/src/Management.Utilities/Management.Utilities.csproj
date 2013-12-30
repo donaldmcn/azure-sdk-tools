@@ -167,6 +167,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CloudGame\Contract\Responses\AzureGameServicesPropertiesResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\XblEnumerateClustersResponse.cs" />
+    <Compile Include="CloudGame\Contract\Responses\XblEnumerateDiagnosticFilesResponse.cs" />
     <Compile Include="CloudGame\XblComputeClient.cs" />
     <Compile Include="CloudGame\XblComputeClientHelper.cs" />
     <Compile Include="CloudGame\XblComputeUriElements.cs" />

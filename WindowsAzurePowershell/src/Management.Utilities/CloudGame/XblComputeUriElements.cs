@@ -115,6 +115,21 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         public const string ServicepoolsReportPath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}/poolunits/reports/servicepools";
 
         /// <summary>
+        /// The Log File path.
+        /// </summary>
+        public const string LogFilePath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}/diagnostics/logs/{1}";
+
+        /// <summary>
+        /// The Dump File path.
+        /// </summary>
+        public const string DumpFilePath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}/diagnostics/dumps/{1}";
+
+        /// <summary>
+        /// The Enumerate Clusters path.
+        /// </summary>
+        public const string EnumerateClustersPath = "/cloudservices/gameservices/resources/gameservices/~/xboxlivecompute/{0}/clusters/?geoRegion={1}&status={2}";
+
+        /// <summary>
         /// The put cloud service resource path.
         /// </summary>
         public const string CloudServiceResourcePath = "/cloudservices/gameservices";

@@ -168,6 +168,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CloudGame\AzureGameServicesHttpClientCommandBase.cs" />
+    <Compile Include="CloudGame\GetAzureGameServicesXblClustersCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGameServicesXblDumpFilesCommand.cs" />
+    <Compile Include="CloudGame\GetAzureGameServicesXblLogFilesCommand.cs" />
     <Compile Include="CloudGame\GetAzureGameServicesXblAssetsCommand.cs" />
     <Compile Include="CloudGame\GetAzureGameServicesXblCertificatesCommand.cs" />
     <Compile Include="CloudGame\GetAzureGameServicesXblGameModesCommand.cs" />

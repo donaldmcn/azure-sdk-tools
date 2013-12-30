@@ -739,5 +739,43 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
                     return true;
                 });
         }
+
+        /// <summary>
+        /// Gets the list of available diagnostic log files for the specific instance
+        /// </summary>
+        /// <param name="xblComputeName">Name of the cloud game.</param>
+        /// <param name="instanceId">The id of the instance to get log files for</param>
+        /// <returns>A list of URIs to download individual log files</returns>
+        public Task<XblEnumerateDiagnosticFilesResponse> GetLogFiles(string xblComputeName, string instanceId)
+        {
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.LogFilePath, xblComputeName, instanceId);
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<XblEnumerateDiagnosticFilesResponse>(tr));
+        }
+
+        /// <summary>
+        /// Gets the list of available diagnostic dump files for the specific instance
+        /// </summary>
+        /// <param name="xblComputeName">Name of the cloud game.</param>
+        /// <param name="instanceId">The id of the instance to get dump files for</param>
+        /// <returns>A list of URIs to download individual dump files</returns>
+        public Task<XblEnumerateDiagnosticFilesResponse> GetDumpFiles(string xblComputeName, string instanceId)
+        {
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.DumpFilePath, xblComputeName, instanceId);
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<XblEnumerateDiagnosticFilesResponse>(tr));
+        }
+
+        /// <summary>
+        /// Gets the list of clusters
+        /// </summary>
+        /// <param name="xblComputeName">Name of the cloud game.</param>
+        /// <param name="geoRegion">The regiond to enumerate clusters from</param>
+        /// <param name="status">The status to filter on</param>
+        /// <returns>A list of clusters that match the region and status filter</returns>
+        public Task<XblEnumerateClustersResponse> GetClusters(string xblComputeName, string geoRegion, string status)
+        {
+            var url = _httpClient.BaseAddress + String.Format(CloudGameUriElements.EnumerateClustersPath, xblComputeName, geoRegion, status);
+            return _httpClient.GetAsync(url, Logger).ContinueWith(tr => ClientHelper.ProcessJsonResponse<XblEnumerateClustersResponse>(tr));
+        }
+
     }
 }

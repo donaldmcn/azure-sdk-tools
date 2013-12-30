@@ -231,5 +231,29 @@ namespace Microsoft.WindowsAzure.Management.Utilities.XblCompute
         /// <returns>The task for completion.</returns>
         Task<bool> StopXblCompute(string xblComputeName);
 
+        /// <summary>
+        /// Gets the list of available diagnostic log files for the specific instance
+        /// </summary>
+        /// <param name="xblComputeName">Name of the cloud game.</param>
+        /// <param name="instanceId">The id of the instance to get log files for</param>
+        /// <returns>A list of URIs to download individual log files</returns>
+        Task<XblEnumerateDiagnosticFilesResponse> GetLogFiles(string xblComputeName, string instanceId);
+
+        /// <summary>
+        /// Gets the list of available diagnostic dump files for the specific instance
+        /// </summary>
+        /// <param name="xblComputeName">Name of the cloud game.</param>
+        /// <param name="instanceId">The id of the instance to get dump files for</param>
+        /// <returns>A list of URIs to download individual dump files</returns>
+        Task<XblEnumerateDiagnosticFilesResponse> GetDumpFiles(string xblComputeName, string instanceId);
+
+        /// <summary>
+        /// Gets the list of clusters
+        /// </summary>
+        /// <param name="xblComputeName">Name of the cloud game.</param>
+        /// <param name="geoRegion">The regiond to enumerate clusters from</param>
+        /// <param name="status">The status to filter on</param>
+        /// <returns>A list of clusters that match the region and status filter</returns>
+        Task<XblEnumerateClustersResponse> GetClusters(string xblComputeName, string geoRegion, string status);
     }
 }
